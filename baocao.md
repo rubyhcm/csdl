@@ -90,18 +90,73 @@
 
 ## CHƯƠNG 2. PHƯƠNG PHÁP ĐỀ XUẤT VÀ THIẾT KẾ HỆ THỐNG
 ### 2.1. Kiến trúc tổng quan
-[Mô tả luồng: app_user DML → AFTER ROW trigger → generic audit function → ghi vào audit_logs (partitioned) → security layer/alerting.]
+Luồng xử lý: `app_user` thực hiện DML (INSERT/UPDATE/DELETE) trên các bảng nghiệp vụ → **AFTER ROW trigger** gọi **generic audit function** → ghi vào `audit_logs` (partitioned) với dữ liệu `old_data/new_data` dạng JSONB → lớp bảo mật (append-only) và cơ chế cảnh báo (`security_alerts`) có thể tích hợp Monitoring/SIEM.
+
+Sơ đồ tổng quan:
+
+```mermaid
+graph TD
+    %% Node Definitions
+    App([Application app_user])
+    DB[PostgreSQL]
+    Tables[Business Tables]
+    Func[Generic Audit Function]
+    AuditTable{{"audit_logs (Partitioned Table)"}}
+    
+    JSONB[JSONB Storage]
+    GIN[GIN Index]
+    Partition[Time-based Partitioning]
+    Security[Security Layer]
+    Alerts[security_alerts]
+    
+    Block[Block UPDATE/DELETE]
+    Append[Append-only]
+    SIEM[Monitoring / SIEM]
+
+    %% Connections
+    App -- "INSERT / UPDATE / DELETE" --> DB
+    DB --> Tables
+    Tables -- "AFTER ROW Trigger" --> Func
+    Func --> AuditTable
+
+    AuditTable --> JSONB
+    AuditTable --> GIN
+    AuditTable --> Partition
+    AuditTable --> Security
+    AuditTable --> Alerts
+
+    Security --> Block
+    Security --> Append
+    Alerts --> SIEM
+
+    %% Styling
+    style AuditTable fill:#f9f,stroke:#333,stroke-width:1px
+    style Security fill:#fbb,stroke:#f66,stroke-width:1px
+    style SIEM fill:#ccf,stroke:#333,stroke-width:1px
+    
+    %% Optional styling for gray boxes
+    style App fill:#eee,stroke:#999
+    style DB fill:#eee,stroke:#999
+    style Tables fill:#eee,stroke:#999
+    style Func fill:#eee,stroke:#999
+    style JSONB fill:#eee,stroke:#999
+    style GIN fill:#eee,stroke:#999
+    style Partition fill:#eee,stroke:#999
+    style Alerts fill:#eee,stroke:#999
+    style Block fill:#eee,stroke:#999
+    style Append fill:#eee,stroke:#999
+```
 
 ### 2.2. Thiết kế mô hình dữ liệu audit (Schema Design)
 - Mục tiêu: ghi vết đầy đủ nhưng tối ưu cho hệ thống **write-heavy**.
 - Bảng `audit_logs` (gợi ý cột):
-  - `id`, `occurred_at` (hoặc `changed_at`), `table_name`, `operation` (I/U/D)
+  - `id`, `changed_at`, `table_name`, `operation` (I/U/D)
   - `actor`/`user_name`, `txid`
   - `old_data` (JSONB), `new_data` (JSONB) — snapshot trước/sau thay đổi
   - `metadata` (JSONB) — ip, app_name, request_id/correlation_id, v.v.
   - `hash`, `prev_hash` (nếu dùng chuỗi băm chống giả mạo)
-- **Lưu ý quan trọng khi dùng Partitioning** (theo hướng dẫn trong `docs.md`):
-  - **Partition key phải nằm trong Primary Key** của bảng cha (ví dụ: `(id, occurred_at)`), nếu không sẽ gặp ràng buộc/thiết kế không hợp lệ.
+- **Lưu ý quan trọng khi dùng Partitioning** (theo PostgreSQL docs):
+  - **Partition key phải nằm trong Primary Key** của bảng cha (ví dụ: `(id, changed_at)`), nếu không sẽ gặp ràng buộc/thiết kế không hợp lệ.
 
 Ví dụ DDL tối giản (minh họa):
 
@@ -113,9 +168,9 @@ CREATE TABLE audit_logs (
     user_name TEXT,
     old_data JSONB,
     new_data JSONB,
-    occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id, occurred_at)
-) PARTITION BY RANGE (occurred_at);
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, changed_at)
+) PARTITION BY RANGE (changed_at);
 ```
 
 - Nguyên tắc:
@@ -130,10 +185,10 @@ CREATE TABLE audit_logs (
   - `new_data = to_jsonb(NEW)`
 - Index (gợi ý):
   - GIN index cho `new_data`/`old_data` để tìm kiếm theo key/value bên trong JSON.
-  - B-tree index cho (`occurred_at`), (`table_name`, `occurred_at`), (`actor`, `occurred_at`).
+  - B-tree index cho (`changed_at`), (`table_name`, `changed_at`), (`actor`, `changed_at`).
 
 ### 2.4. Thiết kế Partitioning theo thời gian
-- Declarative partitioning: `PARTITION BY RANGE (occurred_at)` theo tháng.
+- Declarative partitioning: `PARTITION BY RANGE (changed_at)` theo tháng.
 - Quy ước đặt tên partition (gợi ý): `audit_logs_YYYY_MM`.
 - Lợi ích:
   - **Partition pruning**: planner tự loại bỏ partition không liên quan khi truy vấn theo thời gian.
@@ -237,7 +292,7 @@ Dữ liệu được sinh bằng script/Stored Procedure (PL/pgSQL) dựa trên 
 
 #### 5.2.2. Nhóm dữ liệu audit (đích lưu vết)
 - `audit_logs`: ~10.000.000 dòng (xấp xỉ 5–8GB bao gồm index), trung bình 500B–1KB/dòng.
-- Partitioning: RANGE theo thời gian dựa trên cột `changed_at`/`occurred_at`.
+- Partitioning: RANGE theo thời gian dựa trên cột `changed_at`.
 - Phân bố:
   - **Partition lịch sử (cold)**: 5 partition cho 5 tháng trước (mỗi partition ~1.5 triệu dòng).
   - **Partition hiện tại (active/hot)**: 1 partition tháng hiện tại, chịu tải ghi trong benchmark.

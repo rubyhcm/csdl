@@ -156,18 +156,48 @@ FOR EACH ROW EXECUTE FUNCTION func_audit_trigger();
 - `app_user` **không cần** có quyền `INSERT` vào `audit_logs`.
 - Trigger chạy qua function `SECURITY DEFINER` sẽ ghi log dưới quyền owner (thường là `db_admin`).
 
-### 5.2. Chặn UPDATE/DELETE trên `audit_logs` (immutability)
+### 5.2. Chặn UPDATE/DELETE trên `audit_logs` (immutability) + ghi nhận cảnh báo
+Theo thiết kế trong `csdl-nc-new.md`, khi có hành vi cố tình `UPDATE/DELETE` vào bảng log, hệ thống **vừa chặn** thao tác **vừa ghi nhận** vào bảng cảnh báo (`security_alerts`) để tích hợp giám sát/SIEM.
+
 ```sql
+-- Bảng cảnh báo bảo mật (đơn giản, có thể mở rộng thêm request_id/correlation_id, ip, v.v.)
+CREATE TABLE IF NOT EXISTS security_alerts (
+    id BIGSERIAL PRIMARY KEY,
+    alert_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    action TEXT NOT NULL,
+    table_name TEXT,
+    user_name TEXT,
+    details JSONB
+);
+
 CREATE OR REPLACE FUNCTION func_prevent_audit_change() RETURNS TRIGGER AS $$
+DECLARE
+    v_details JSONB;
 BEGIN
+    v_details := jsonb_build_object(
+        'op', TG_OP,
+        'schema', TG_TABLE_SCHEMA
+    );
+
+    IF (TG_OP = 'UPDATE') THEN
+        v_details := v_details || jsonb_build_object('old', to_jsonb(OLD), 'new', to_jsonb(NEW));
+    ELSIF (TG_OP = 'DELETE') THEN
+        v_details := v_details || jsonb_build_object('old', to_jsonb(OLD));
+    END IF;
+
+    INSERT INTO security_alerts(action, table_name, user_name, details)
+    VALUES ('AUDIT_TAMPER_ATTEMPT', TG_TABLE_NAME, current_user, v_details);
+
     RAISE EXCEPTION 'Không được phép sửa hoặc xóa Audit Log!';
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER trg_protect_audit
 BEFORE UPDATE OR DELETE ON audit_logs
 FOR EACH ROW EXECUTE FUNCTION func_prevent_audit_change();
 ```
+
+> Gợi ý hardening: với các function `SECURITY DEFINER`, nên cấu hình `SET search_path` cố định để tránh rủi ro hijack đối tượng theo schema.
 
 ---
 
@@ -192,7 +222,7 @@ ON audit_logs USING GIN (new_data);
   - Proposed: có trigger audit (ghi vào bảng audit partitioned + JSONB).
 
 ### 7.2. Stress test bằng pgbench (50 connections, UPDATE 60s)
-Kịch bản theo `csdl-nc.md`: giả lập **50 kết nối đồng thời**, chạy **60 giây**, UPDATE liên tục bảng `orders`.
+Kịch bản theo `csdl-nc-new.md`: giả lập **50 kết nối đồng thời**, chạy **60 giây**, UPDATE liên tục bảng `orders`.
 
 1) Tạo file script cho pgbench (ví dụ `update_orders.sql`):
 ```sql
