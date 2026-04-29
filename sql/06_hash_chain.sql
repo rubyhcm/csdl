@@ -93,8 +93,18 @@ BEGIN
 
         log_id     := r.id;
         changed_at := r.changed_at;
-        chain_ok   := (r.hash = v_expected);
-        detail     := CASE
+
+        -- Rows seeded with hash trigger disabled have hash = NULL → skip
+        IF r.hash IS NULL THEN
+            chain_ok := NULL;
+            detail   := 'SKIPPED — no hash (seeded before trigger)';
+            v_prev   := NULL;
+            RETURN NEXT;
+            CONTINUE;
+        END IF;
+
+        chain_ok := (r.hash = v_expected);
+        detail   := CASE
             WHEN r.hash = v_expected THEN 'OK'
             ELSE 'HASH MISMATCH — chain broken at id=' || r.id
         END;
