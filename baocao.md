@@ -95,10 +95,29 @@
 ### 2.2. Thiết kế mô hình dữ liệu audit (Schema Design)
 - Mục tiêu: ghi vết đầy đủ nhưng tối ưu cho hệ thống **write-heavy**.
 - Bảng `audit_logs` (gợi ý cột):
-  - `id`, `occurred_at`, `table_name`, `operation` (I/U/D), `actor` (app_user), `txid`
-  - `old_data` (JSONB), `new_data` (JSONB) — lưu snapshot trước/sau thay đổi
+  - `id`, `occurred_at` (hoặc `changed_at`), `table_name`, `operation` (I/U/D)
+  - `actor`/`user_name`, `txid`
+  - `old_data` (JSONB), `new_data` (JSONB) — snapshot trước/sau thay đổi
   - `metadata` (JSONB) — ip, app_name, request_id/correlation_id, v.v.
   - `hash`, `prev_hash` (nếu dùng chuỗi băm chống giả mạo)
+- **Lưu ý quan trọng khi dùng Partitioning** (theo hướng dẫn trong `docs.md`):
+  - **Partition key phải nằm trong Primary Key** của bảng cha (ví dụ: `(id, occurred_at)`), nếu không sẽ gặp ràng buộc/thiết kế không hợp lệ.
+
+Ví dụ DDL tối giản (minh họa):
+
+```sql
+CREATE TABLE audit_logs (
+    id BIGSERIAL,
+    table_name TEXT NOT NULL,
+    operation TEXT NOT NULL,
+    user_name TEXT,
+    old_data JSONB,
+    new_data JSONB,
+    occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, occurred_at)
+) PARTITION BY RANGE (occurred_at);
+```
+
 - Nguyên tắc:
   - **Schema-less logging**: 1 bảng audit phục vụ nhiều bảng nghiệp vụ.
   - **Append-only/WORM**: không cho UPDATE/DELETE log.
@@ -151,6 +170,11 @@
 - Drop partition vs delete truyền thống.
 - Archive ra S3/HDD (mô tả quy trình, tiêu chí kiểm soát).
 
+#### 3.4.1. Backup/Restore theo partition (Import/Export)
+- Với cấu trúc partition, có thể **backup từng phần** (partial backup) các partition cũ để phục vụ thanh tra/kiểm toán.
+- Gợi ý công cụ: `pg_dump` backup riêng một partition (ví dụ `audit_logs_2026_01`) ra file, sau đó `DROP TABLE` partition để giải phóng dung lượng.
+- Khi cần truy xuất lại: restore từ file dump vào môi trường điều tra/đối soát.
+
 ### 3.5. Cơ chế truy vấn/trích xuất log phục vụ nghiệp vụ và kiểm toán
 - Query mẫu theo `table_name`/`actor`/time range.
 - Query sâu vào JSONB (ví dụ trường lương thay đổi):
@@ -188,39 +212,77 @@ WHERE table_name = 'nhan_vien'
 
 ## CHƯƠNG 5. THỰC NGHIỆM, KIỂM THỬ VÀ ĐÁNH GIÁ
 ### 5.1. Môi trường thực nghiệm
-- PostgreSQL 16; WSL2 Ubuntu 22.04; 4 vCPU; 8GB RAM; 20GB SSD.
-- Công cụ: pgbench; script PL/pgSQL `generate_series()`.
+- Hệ quản trị CSDL: PostgreSQL 16.
+- Hệ điều hành: Windows 11 + Ubuntu Server 22.04 LTS (WSL2).
+- Phần cứng: 4 vCPU; 8GB RAM; 20GB SSD.
+- Công cụ đo lường: `pgbench`.
+- Nguyên tắc benchmark: chạy **5 lần**, warm-up **10s**, lấy kết quả trung bình.
 
 ### 5.2. Bộ dữ liệu giả lập
-- Orders (structured): 1,000,000 bản ghi.
-- Products (semi-structured): 100,000 bản ghi.
-- Audit logs: ~10,000,000 dòng (5–8GB), trung bình 500B–1KB/dòng.
-- Index: GIN trên `new_data`.
+Dữ liệu được sinh bằng script/Stored Procedure (PL/pgSQL) dựa trên `generate_series()` để đảm bảo **tốc độ sinh nhanh** và **khả năng tái lập (reproducibility)**.
+
+#### 5.2.1. Nhóm dữ liệu nghiệp vụ (nguồn phát sinh thay đổi)
+- **Bảng Orders** (dữ liệu có cấu trúc)
+  - Số lượng: 1.000.000 bản ghi.
+  - Mục đích: stress test hiệu năng ghi log (TPS) do có tần suất cập nhật trạng thái cao.
+  - Trường dữ liệu gợi ý: `id (BIGSERIAL)`, `customer_id (1..50.000)`, `total_amount (100.000..100.000.000)`, `status (PENDING/PAID/SHIPPED/CANCELLED)`, `created_at` (rải đều 6 tháng gần nhất).
+
+- **Bảng Products** (dữ liệu bán cấu trúc)
+  - Số lượng: 100.000 bản ghi.
+  - Mục đích: kiểm chứng JSONB lưu “dynamic attributes” vào cùng một cột.
+  - Trường dữ liệu gợi ý: `id`, `sku`, `tech_specs (JSONB)`.
+  - Ví dụ dữ liệu JSON:
+    - Laptop: `{ "cpu": "Core i9", "ram": "32GB", "screen": "15 inch" }`
+    - Áo thun: `{ "color": "Blue", "size": "L", "material": "Cotton" }`
+
+#### 5.2.2. Nhóm dữ liệu audit (đích lưu vết)
+- `audit_logs`: ~10.000.000 dòng (xấp xỉ 5–8GB bao gồm index), trung bình 500B–1KB/dòng.
+- Partitioning: RANGE theo thời gian dựa trên cột `changed_at`/`occurred_at`.
+- Phân bố:
+  - **Partition lịch sử (cold)**: 5 partition cho 5 tháng trước (mỗi partition ~1.5 triệu dòng).
+  - **Partition hiện tại (active/hot)**: 1 partition tháng hiện tại, chịu tải ghi trong benchmark.
+- Index: GIN trên `new_data` (và/hoặc `old_data`) phục vụ tìm kiếm sâu trong JSON.
 
 ### 5.3. Phương pháp đo và thước đo (Metrics)
-- TPS, latency (avg/p95/p99 nếu có), disk usage, storage growth.
-- Thiết kế chạy benchmark: 5 lần, warm-up 10s, lấy trung bình.
+- TPS (Transactions Per Second).
+- Average latency (ms) và (nếu có) p95/p99.
+- Overhead: chênh lệch TPS/latency giữa Baseline và Proposed.
+- Disk usage / storage growth.
 
 ### 5.4. Các kịch bản thực nghiệm
-- **Kịch bản 1: Hiệu năng xử lý (Benchmarking)**
-  - Đo TPS/latency khi **insert 100.000 dòng** trong 2 trường hợp:
-    1) Baseline: không có audit trigger.
-    2) Proposed: có audit trigger (ghi vào bảng audit partitioned).
-  - Kỳ vọng: overhead < 15%.
+- **Kịch bản 1: Đánh giá hiệu năng xử lý (Stress test pgbench)**
+  - Thiết lập: `pgbench` giả lập **50 kết nối đồng thời**, chạy **60 giây**, thao tác **UPDATE liên tục** trên bảng Orders.
+  - So sánh 2 trường hợp:
+    1) Baseline: không gắn trigger audit.
+    2) Proposed: có dynamic trigger (ghi log JSONB vào bảng audit partitioned).
+  - Chỉ số: TPS và average latency; kỳ vọng overhead < 15%.
 
-- **Kịch bản 2: Mô hình lưu trữ**
-  - Chứng minh JSONB lưu được cấu trúc khác nhau (Orders vs Products) trong một bảng log.
-  - Chứng minh drop partition (xóa log tháng cũ) nhanh hơn delete truyền thống; kỳ vọng < 1s.
+- **Kịch bản 2: Đánh giá mô hình lưu trữ (JSONB + Partitioning)**
+  - JSONB: thay đổi dữ liệu trên Orders và Products → kỳ vọng cùng một cơ chế audit lưu đúng hai cấu trúc khác nhau.
+  - Partitioning/Retention: xóa log cũ 1 tháng (~1.000.000 dòng) và so sánh:
+    - `DELETE` truyền thống vs `DROP PARTITION`.
+    - Kỳ vọng: `DROP PARTITION` < 1s và tránh table locking kéo dài.
 
-- **Kịch bản 3: An toàn bảo mật (Demo/Penetration Test)**
-  - Bước 1: tạo bảng nghiệp vụ (ví dụ `salary_table`) và audit trail partition theo tháng.
-  - Bước 2: đăng nhập role `accountant` cập nhật dữ liệu (log được ghi).
-  - Bước 3: thử xóa dấu vết: `DELETE FROM audit_logs ...` (bị chặn do quyền hạn hoặc trigger immutability).
-  - Bước 4: đăng nhập role `auditor` truy vấn JSONB để xem lịch sử (old/new/time/user).
+- **Kịch bản 3: Đánh giá an toàn & bảo mật (Security & Integrity)**
+  - Thiết lập: `app_user` (quyền hạn chế) và `db_admin` (quyền cao).
+  - Thử nghiệm 1 (SECURITY DEFINER):
+    - `app_user` UPDATE bảng nghiệp vụ → log ghi thành công.
+    - `app_user` cố SELECT bảng audit → bị từ chối (Access denied).
+  - Thử nghiệm 2 (Immutability):
+    - `db_admin` cố UPDATE/DELETE trực tiếp lên `audit_logs` → trigger bảo vệ chặn và trả lỗi exception.
 
 - **Kịch bản 4: Hiệu năng truy vấn (Read Performance)**
   - So sánh truy vấn JSONB theo key/value khi **không có** và **có** GIN index.
-  - Kỳ vọng: giảm từ hàng chục giây xuống mili-giây với dữ liệu ~1.5 triệu dòng/partition.
+  - Kỳ vọng: giảm từ hàng chục giây xuống mili-giây với dữ liệu lớn.
+
+#### 5.4.1. Ma trận tổng hợp mục tiêu và kịch bản
+| Nội dung thực hiện | Kịch bản thực nghiệm | Kết quả đầu ra dự kiến |
+|---|---|---|
+| Lưu trữ: JSONB cho đa dạng cấu trúc | Kịch bản 2 (Audit Orders & Products) | Log lưu trữ thành công cấu trúc khác nhau vào 1 bảng |
+| Lưu trữ: Partitioning tối ưu quản lý | Kịch bản 2 (Drop Partition) | Thời gian giải phóng dữ liệu nhanh hơn DELETE |
+| Xử lý: Hiệu năng cao, độ trễ thấp | Kịch bản 1 (Stress test pgbench) | Báo cáo TPS và latency ở mức chấp nhận được |
+| An toàn: Security Definer (Ủy quyền) | Kịch bản 3 (User quyền thấp) | User ghi được log nhưng không xem được log |
+| An toàn: Immutability (Chống xóa) | Kịch bản 3 (Admin can thiệp) | Hệ thống báo lỗi, dữ liệu log được bảo toàn |
 
 ### 5.5. Kết quả và phân tích
 - Bảng/biểu đồ: TPS/latency; dung lượng; thời gian truy vấn; thời gian quản trị partition.

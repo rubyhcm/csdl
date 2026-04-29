@@ -1,0 +1,51 @@
+graph TD
+    %% Node Definitions
+    App([Application app_user])
+    DB[PostgreSQL]
+    Tables[Business Tables]
+    Func[Generic Audit Function]
+    AuditTable{{"audit_logs (Partitioned Table)"}}
+    
+    JSONB[JSONB Storage]
+    GIN[GIN Index]
+    Partition[Time-based Partitioning]
+    Security[Security Layer]
+    Alerts[security_alerts]
+    
+    Block[Block UPDATE/DELETE]
+    Append[Append-only]
+    SIEM[Monitoring / SIEM]
+
+    %% Connections
+    App -- "INSERT / UPDATE / DELETE" --> DB
+    DB --> Tables
+    Tables -- "AFTER ROW Trigger" --> Func
+    Func --> AuditTable
+
+    AuditTable --> JSONB
+    AuditTable --> GIN
+    AuditTable --> Partition
+    AuditTable --> Security
+    AuditTable --> Alerts
+
+    Security --> Block
+    Security --> Append
+    Alerts --> SIEM
+
+    %% Styling
+    style AuditTable fill:#f9f,stroke:#333,stroke-width:1px
+    style Security fill:#fbb,stroke:#f66,stroke-width:1px
+    style SIEM fill:#ccf,stroke:#333,stroke-width:1px
+    
+    %% Optional styling for gray boxes
+    style App fill:#eee,stroke:#999
+    style DB fill:#eee,stroke:#999
+    style Tables fill:#eee,stroke:#999
+    style Func fill:#eee,stroke:#999
+    style JSONB fill:#eee,stroke:#999
+    style GIN fill:#eee,stroke:#999
+    style Partition fill:#eee,stroke:#999
+    style Alerts fill:#eee,stroke:#999
+    style Block fill:#eee,stroke:#999
+    style Append fill:#eee,stroke:#999
+    
