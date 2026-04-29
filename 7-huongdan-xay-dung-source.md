@@ -161,17 +161,20 @@ CREATE OR REPLACE FUNCTION func_audit_trigger() RETURNS TRIGGER AS $$
 DECLARE
     v_table TEXT := TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME;
 BEGIN
+    -- QUAN TRỌNG: dùng session_user, KHÔNG dùng current_user.
+    -- Trong SECURITY DEFINER, current_user trả về owner function (db_admin),
+    -- không phải người dùng thực sự đang kết nối.
     IF (TG_OP = 'DELETE') THEN
         INSERT INTO audit_logs (table_name, operation, user_name, old_data)
-        VALUES (v_table, 'DELETE', current_user, to_jsonb(OLD));
+        VALUES (v_table, 'DELETE', session_user, to_jsonb(OLD));
         RETURN OLD;
     ELSIF (TG_OP = 'UPDATE') THEN
         INSERT INTO audit_logs (table_name, operation, user_name, old_data, new_data)
-        VALUES (v_table, 'UPDATE', current_user, to_jsonb(OLD), to_jsonb(NEW));
+        VALUES (v_table, 'UPDATE', session_user, to_jsonb(OLD), to_jsonb(NEW));
         RETURN NEW;
     ELSIF (TG_OP = 'INSERT') THEN
         INSERT INTO audit_logs (table_name, operation, user_name, new_data)
-        VALUES (v_table, 'INSERT', current_user, to_jsonb(NEW));
+        VALUES (v_table, 'INSERT', session_user, to_jsonb(NEW));
         RETURN NEW;
     END IF;
     RETURN NULL;
@@ -232,10 +235,16 @@ BEGIN
         v_details := v_details || jsonb_build_object('old', to_jsonb(OLD));
     END IF;
 
-    INSERT INTO security_alerts(action, table_name, user_name, details)
-    VALUES ('AUDIT_TAMPER_ATTEMPT', TG_TABLE_NAME, current_user, v_details);
+    -- Dùng dblink để ghi alert vào autonomous transaction:
+    -- INSERT thông thường sẽ bị rollback cùng với RAISE EXCEPTION.
+    PERFORM dblink_exec(
+        'dbname=audit_poc host=localhost user=db_admin password=db_admin_pass',
+        format('INSERT INTO security_alerts(action,table_name,user_name,details) VALUES (%L,%L,%L,%L)',
+               'AUDIT_TAMPER_ATTEMPT', TG_TABLE_NAME, session_user, v_details::text)
+    );
 
-    RAISE EXCEPTION 'Không được phép sửa hoặc xóa Audit Log!';
+    RAISE EXCEPTION 'Audit log is immutable — % on % is not allowed (user: %)',
+        TG_OP, TG_TABLE_NAME, session_user;
 END;
 $$ LANGUAGE plpgsql
    SECURITY DEFINER
