@@ -26,9 +26,25 @@ CREATE DATABASE audit_poc;
 
 Ví dụ (tùy môi trường bạn chỉnh password/privileges):
 ```sql
-CREATE ROLE db_admin LOGIN;
-CREATE ROLE app_user LOGIN;
-CREATE ROLE auditor  LOGIN;
+CREATE ROLE db_admin LOGIN PASSWORD 'change_me';
+CREATE ROLE app_user LOGIN PASSWORD 'change_me';
+CREATE ROLE auditor  LOGIN PASSWORD 'change_me';
+```
+
+### 1.3. GRANT/REVOKE theo mô hình bảo mật
+Áp dụng **sau khi** đã tạo các bảng `audit_logs`, `orders`, `products`, `security_alerts` ở các bước sau. Mục tiêu: enforce đúng claim "ghi được log nhưng không SELECT trực tiếp bảng log" của báo cáo.
+
+```sql
+-- Bảng nghiệp vụ: app_user thao tác bình thường
+GRANT SELECT, INSERT, UPDATE, DELETE ON orders, products TO app_user;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user;
+
+-- Bảng audit: app_user KHÔNG có quyền nào (ghi log đi qua SECURITY DEFINER function)
+REVOKE ALL ON audit_logs FROM PUBLIC, app_user;
+REVOKE ALL ON security_alerts FROM PUBLIC, app_user;
+
+-- auditor: chỉ đọc
+GRANT SELECT ON audit_logs, security_alerts TO auditor;
 ```
 
 ---
@@ -57,7 +73,32 @@ PARTITION OF audit_logs
 FOR VALUES FROM ('2026-01-01') TO ('2026-02-01');
 ```
 
-> Thực tế nên có script tạo partition tự động theo tháng.
+### 2.3. Tự động tạo partition theo tháng
+Hàm `func_create_monthly_partition(p_month DATE)` tạo partition cho tháng chứa `p_month` (idempotent — dùng `IF NOT EXISTS`).
+
+```sql
+CREATE OR REPLACE FUNCTION func_create_monthly_partition(p_month DATE)
+RETURNS TEXT AS $$
+DECLARE
+    v_start  DATE := date_trunc('month', p_month)::date;
+    v_end    DATE := (v_start + INTERVAL '1 month')::date;
+    v_name   TEXT := format('audit_logs_%s', to_char(v_start, 'YYYY_MM'));
+BEGIN
+    EXECUTE format(
+        'CREATE TABLE IF NOT EXISTS %I PARTITION OF audit_logs FOR VALUES FROM (%L) TO (%L)',
+        v_name, v_start, v_end
+    );
+    RETURN v_name;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Bootstrap: tạo sẵn 6 partition lịch sử (cold) + tháng hiện tại + tháng kế (hot/next)
+SELECT func_create_monthly_partition((date_trunc('month', now()) - (i || ' months')::interval)::date)
+FROM generate_series(0, 6) i;
+SELECT func_create_monthly_partition((date_trunc('month', now()) + INTERVAL '1 month')::date);
+```
+
+> Production nên gọi hàm này định kỳ (cron/pg_cron) trước ngày đầu tháng để không bị insert lỗi do thiếu partition.
 
 ---
 
@@ -117,24 +158,30 @@ Hàm này ghi log động theo `TG_OP` và `TG_TABLE_NAME`.
 
 ```sql
 CREATE OR REPLACE FUNCTION func_audit_trigger() RETURNS TRIGGER AS $$
+DECLARE
+    v_table TEXT := TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME;
 BEGIN
     IF (TG_OP = 'DELETE') THEN
         INSERT INTO audit_logs (table_name, operation, user_name, old_data)
-        VALUES (TG_TABLE_NAME, 'DELETE', current_user, to_jsonb(OLD));
+        VALUES (v_table, 'DELETE', current_user, to_jsonb(OLD));
         RETURN OLD;
     ELSIF (TG_OP = 'UPDATE') THEN
         INSERT INTO audit_logs (table_name, operation, user_name, old_data, new_data)
-        VALUES (TG_TABLE_NAME, 'UPDATE', current_user, to_jsonb(OLD), to_jsonb(NEW));
+        VALUES (v_table, 'UPDATE', current_user, to_jsonb(OLD), to_jsonb(NEW));
         RETURN NEW;
     ELSIF (TG_OP = 'INSERT') THEN
         INSERT INTO audit_logs (table_name, operation, user_name, new_data)
-        VALUES (TG_TABLE_NAME, 'INSERT', current_user, to_jsonb(NEW));
+        VALUES (v_table, 'INSERT', current_user, to_jsonb(NEW));
         RETURN NEW;
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path = public, pg_temp;  -- hardening: chống schema-hijack
 ```
+
+> Ghi `schema.table` thay vì chỉ `TG_TABLE_NAME` để tránh nhập nhằng khi audit nhiều schema.
 
 ### 4.2. Gắn trigger vào bảng nghiệp vụ
 Gắn audit trigger cho các bảng nguồn phát sinh thay đổi (ít nhất: `orders`, `products`).
@@ -190,12 +237,50 @@ BEGIN
 
     RAISE EXCEPTION 'Không được phép sửa hoặc xóa Audit Log!';
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path = public, pg_temp;
 
 CREATE TRIGGER trg_protect_audit
 BEFORE UPDATE OR DELETE ON audit_logs
 FOR EACH ROW EXECUTE FUNCTION func_prevent_audit_change();
 ```
+
+### 5.3. (Tùy chọn) Tamper-evident — hash chain
+Trigger `BEFORE INSERT` tính `hash = sha256(prev_hash || canonical_payload)`. Khi ai đó sửa được trực tiếp file dữ liệu (bypass DB), chuỗi hash sẽ gãy và verify được.
+
+```sql
+ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS prev_hash BYTEA;
+ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS hash      BYTEA;
+
+CREATE OR REPLACE FUNCTION func_audit_hash_chain() RETURNS TRIGGER AS $$
+DECLARE
+    v_prev BYTEA;
+    v_payload TEXT;
+BEGIN
+    SELECT hash INTO v_prev
+    FROM audit_logs
+    WHERE table_name = NEW.table_name
+    ORDER BY changed_at DESC, id DESC
+    LIMIT 1;
+
+    v_payload := COALESCE(NEW.table_name,'') || '|' || COALESCE(NEW.operation,'') || '|'
+              || COALESCE(NEW.user_name,'')  || '|' || COALESCE(NEW.old_data::text,'') || '|'
+              || COALESCE(NEW.new_data::text,'') || '|' || NEW.changed_at::text;
+
+    NEW.prev_hash := v_prev;
+    NEW.hash := digest(COALESCE(v_prev, ''::bytea) || v_payload::bytea, 'sha256');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TRIGGER trg_audit_hash
+BEFORE INSERT ON audit_logs
+FOR EACH ROW EXECUTE FUNCTION func_audit_hash_chain();
+```
+
+> Lưu ý: hash chain làm tăng overhead ghi (do query `prev_hash`). Bật/tắt theo nhu cầu khi benchmark.
 
 > Gợi ý hardening: với các function `SECURITY DEFINER`, nên cấu hình `SET search_path` cố định để tránh rủi ro hijack đối tượng theo schema.
 
@@ -203,14 +288,24 @@ FOR EACH ROW EXECUTE FUNCTION func_prevent_audit_change();
 
 ## 6) Tạo index phục vụ truy vấn
 ```sql
--- Tối ưu truy vấn theo thời gian + bảng
+-- Theo thời gian (báo cáo, range scan)
+CREATE INDEX IF NOT EXISTS idx_audit_changed_at
+ON audit_logs (changed_at);
+
+-- Theo bảng + thời gian (truy vấn lịch sử 1 bảng)
 CREATE INDEX IF NOT EXISTS idx_audit_table_time
 ON audit_logs (table_name, changed_at);
 
--- Tối ưu truy vấn sâu JSONB
+-- Theo actor + thời gian (truy vết người dùng)
+CREATE INDEX IF NOT EXISTS idx_audit_user_time
+ON audit_logs (user_name, changed_at);
+
+-- Truy vấn sâu JSONB
 CREATE INDEX IF NOT EXISTS idx_audit_new_data_gin
 ON audit_logs USING GIN (new_data);
 ```
+
+> Vì `audit_logs` là bảng cha partitioned, các index trên sẽ tự động được tạo cho từng partition con (PostgreSQL 11+).
 
 ---
 
@@ -239,7 +334,20 @@ pgbench -c 50 -T 60 -f update_orders.sql audit_poc
 
 3) Lặp lại 5 lần và ghi TPS/latency.
 
-> Gợi ý chạy Baseline: tạo dữ liệu và chạy benchmark **trước khi** tạo trigger audit (hoặc tạm DISABLE trigger), sau đó bật lại để chạy Proposed.
+#### 7.2.1. Bật/tắt audit để so sánh Baseline vs Proposed
+Cách an toàn nhất là giữ nguyên schema, chỉ disable trigger:
+
+```sql
+-- Baseline: tắt audit
+ALTER TABLE orders   DISABLE TRIGGER trg_audit_orders;
+ALTER TABLE products DISABLE TRIGGER trg_audit_products;
+
+-- Proposed: bật lại
+ALTER TABLE orders   ENABLE TRIGGER trg_audit_orders;
+ALTER TABLE products ENABLE TRIGGER trg_audit_products;
+```
+
+> Lưu ý: trước khi đo Proposed, nên `TRUNCATE` các partition đã ghi log baseline (nếu có) để loại nhiễu I/O do bảng audit phình to giữa các lượt đo. Đồng thời chạy `VACUUM ANALYZE orders, products, audit_logs` giữa các lượt.
 
 ### 7.3. Thu thập chỉ số
 - TPS

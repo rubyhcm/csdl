@@ -256,8 +256,10 @@ WHERE table_name = 'nhan_vien'
 - Phân tích các trường hợp ngoại lệ (bảo trì/khôi phục) và kiểm soát.
 
 ### 4.3. Tamper-evident logging (chuỗi băm)
-- Công thức: `hash_n = hash(log_n + hash_{n-1})`.
-- Cách lưu `prev_hash`/`hash`; quy trình kiểm tra tính toàn vẹn.
+- Công thức: `hash_n = sha256(prev_hash || canonical(log_n))`, trong đó `canonical(log_n)` là chuỗi nối tiêu chuẩn của các trường nghiệp vụ (`table_name|operation|user_name|old_data|new_data|changed_at`).
+- Lưu `prev_hash`, `hash` (BYTEA) trên chính bảng `audit_logs`; tính trong `BEFORE INSERT` trigger (`func_audit_hash_chain`) sử dụng `pgcrypto.digest`.
+- Quy trình kiểm tra (verifier): duyệt log theo thứ tự `(changed_at, id)`, tính lại hash và so khớp với `hash` đã lưu; gãy chuỗi ⇒ phát cảnh báo `HASH_CHAIN_BROKEN` vào `security_alerts`.
+- Đánh đổi: thêm 1 SELECT `prev_hash` mỗi lần insert ⇒ tăng latency; có thể tắt khi benchmark thuần TPS.
 
 ### 4.4. Cảnh báo và giám sát (Alerting/Monitoring)
 - Bảng `security_alerts` hoặc integration SIEM.
