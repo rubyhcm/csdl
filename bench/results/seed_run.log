@@ -1,0 +1,78 @@
+=== 03_seed_data.sql — start ===
+Timing is on.
+--- 0. Cleaning existing data ---
+ALTER TABLE
+Time: 8.642 ms
+ALTER TABLE
+Time: 1.933 ms
+ALTER TABLE
+Time: 2.235 ms
+TRUNCATE TABLE
+Time: 12.665 ms
+TRUNCATE TABLE
+Time: 38.150 ms
+TRUNCATE TABLE
+Time: 6.084 ms
+--- Clean done ---
+--- 1. Seeding orders (1,000,000 rows) ---
+INSERT 0 1000000
+Time: 3412.613 ms (00:03.413)
+--- orders: done ---
+--- 2. Seeding products (100,000 rows) ---
+INSERT 0 100000
+Time: 533.835 ms
+--- products: done ---
+ALTER TABLE
+Time: 1.164 ms
+ALTER TABLE
+Time: 0.985 ms
+--- 3. Seeding audit_logs history (7,500,000 rows across 5 partitions) ---
+partition 2025-11 (1,500,000 rows)...
+INSERT 0 1500000
+Time: 15154.159 ms (00:15.154)
+partition 2025-12 (1,500,000 rows)...
+INSERT 0 1500000
+Time: 14393.217 ms (00:14.393)
+partition 2026-01 (1,500,000 rows)...
+INSERT 0 1500000
+Time: 16949.867 ms (00:16.950)
+partition 2026-02 (1,500,000 rows)...
+INSERT 0 1500000
+Time: 16849.390 ms (00:16.849)
+partition 2026-03 (1,500,000 rows)...
+INSERT 0 1500000
+Time: 17257.635 ms (00:17.258)
+--- audit_logs history: done ---
+ALTER TABLE
+Time: 4.137 ms
+--- 4. VACUUM ANALYZE ---
+VACUUM
+Time: 86.384 ms
+VACUUM
+Time: 152.843 ms
+VACUUM
+Time: 4019.771 ms (00:04.020)
+--- 5. Size report ---
+table_name	total_size	est_rows
+orders	87 MB	1,000,001
+products	18 MB	100,000
+audit_logs	0 bytes	7,501,341
+audit_logs_2025_10	16 kB	0
+audit_logs_2025_10_pkey	8192 bytes	0
+audit_logs_2025_11	658 MB	1,499,967
+audit_logs_2025_11_pkey	45 MB	1,499,967
+audit_logs_2025_12	658 MB	1,500,030
+audit_logs_2025_12_pkey	45 MB	1,500,030
+audit_logs_2026_01	658 MB	1,500,091
+audit_logs_2026_01_pkey	45 MB	1,500,091
+audit_logs_2026_02	658 MB	1,499,883
+audit_logs_2026_02_pkey	45 MB	1,499,883
+audit_logs_2026_03	658 MB	1,500,025
+audit_logs_2026_03_pkey	45 MB	1,500,025
+audit_logs_2026_04	16 kB	0
+audit_logs_2026_04_pkey	8192 bytes	0
+audit_logs_2026_05	16 kB	0
+audit_logs_2026_05_pkey	8192 bytes	0
+Time: 4.913 ms
+Timing is off.
+=== 03_seed_data.sql — done ===

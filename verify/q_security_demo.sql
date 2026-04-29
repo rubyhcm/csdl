@@ -17,26 +17,44 @@
 
 \c "postgresql://app_user:app_user_pass@localhost/audit_poc"
 
--- seed a fresh order to work with
+\set ON_ERROR_STOP 1
+
+-- seed a fresh order to work with (capture id for deterministic checks)
 INSERT INTO orders (customer_id, total_amount, status, created_at)
-VALUES (9999, 1000000, 'PENDING', now());
+VALUES (9999, 1000000, 'PENDING', now())
+RETURNING id AS order_id \gset
 
 UPDATE orders
 SET status = 'SHIPPED'
-WHERE customer_id = 9999
-  AND status = 'PENDING';
+WHERE id = :order_id;
 
 \c "postgresql://auditor:auditor_pass@localhost/audit_poc"
 
-SELECT
-    'Case 1' AS case_num,
-    CASE WHEN count(*) > 0 THEN 'PASS — audit row found' ELSE 'FAIL — no audit row' END AS result,
-    count(*) AS audit_rows
+-- capture the audit row identity (used in Case 3)
+SELECT id AS audit_id, changed_at AS audit_changed_at
 FROM audit_logs
 WHERE table_name = 'public.orders'
   AND operation   = 'UPDATE'
   AND user_name   = 'app_user'
+  AND new_data->>'id' = :'order_id'
+ORDER BY changed_at DESC
+LIMIT 1
+\gset
+
+SELECT
+    'Case 1' AS case_num,
+    CASE WHEN count(*) = 1 THEN 'PASS — audit row found' ELSE 'FAIL — audit row missing' END AS result,
+    count(*) AS audit_rows,
+    max(id) AS audit_id,
+    max(changed_at) AS audit_changed_at
+FROM audit_logs
+WHERE table_name = 'public.orders'
+  AND operation   = 'UPDATE'
+  AND user_name   = 'app_user'
+  AND new_data->>'id' = :'order_id'
   AND new_data->>'status' = 'SHIPPED';
+
+\set ON_ERROR_STOP 0
 
 -- ────────────────────────────────────────────────
 -- Case 2: app_user SELECT audit_logs → permission denied
@@ -63,13 +81,8 @@ SELECT 'Case 2 — should NOT reach here' AS result FROM audit_logs LIMIT 1;
 
 \set ON_ERROR_STOP 0
 DELETE FROM audit_logs
-WHERE (id, changed_at) IN (
-  SELECT id, changed_at
-  FROM audit_logs
-  WHERE user_name = 'app_user'
-  ORDER BY changed_at DESC
-  LIMIT 1
-);
+WHERE id = :audit_id
+  AND changed_at = :'audit_changed_at';
 \set ON_ERROR_STOP 0
 
 \echo 'Case 3: checking security_alerts for AUDIT_TAMPER_ATTEMPT...'
