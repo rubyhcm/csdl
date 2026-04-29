@@ -52,12 +52,13 @@ VACUUM ANALYZE products;
 -- ── index list ────────────────────────────────────────────────────────────────
 \echo '--- Index summary ---'
 SELECT
-    indexname,
-    pg_size_pretty(pg_relation_size(indexrelid)) AS index_size
+    indexrelname                                         AS index_name,
+    relname                                              AS table_name,
+    pg_size_pretty(pg_relation_size(indexrelid))         AS index_size
 FROM pg_stat_user_indexes
 WHERE schemaname = 'public'
   AND relname IN ('orders','products','audit_logs')
-ORDER BY relname, indexname;
+ORDER BY relname, indexrelname;
 
 \timing off
 \echo '=== 07_indexes.sql done ==='
