@@ -1,0 +1,200 @@
+=== Scenario 4: GIN Index Performance Comparison ===
+Timing is on.
+
+--- WITH GIN index ---
+                                                                                      QUERY PLAN                                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=448332.67..448332.68 rows=1 width=8) (actual time=914.630..918.553 rows=1 loops=1)
+   Buffers: shared hit=154 read=393219
+   ->  Gather  (cost=448332.46..448332.67 rows=2 width=8) (actual time=914.111..918.526 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=154 read=393219
+         ->  Partial Aggregate  (cost=447332.46..447332.47 rows=1 width=8) (actual time=902.732..902.736 rows=1 loops=3)
+               Buffers: shared hit=154 read=393219
+               ->  Parallel Append  (cost=42.79..444851.29 rows=992469 width=0) (actual time=44.430..859.287 rows=833765 loops=3)
+                     Buffers: shared hit=154 read=393219
+                     ->  Parallel Bitmap Heap Scan on audit_logs_2026_03 audit_logs_6  (cost=2809.34..87780.92 rows=170446 width=0) (actual time=103.129..553.992 rows=499400 loops=1)
+                           Recheck Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                           Rows Removed by Index Recheck: 420814
+                           Filter: (table_name = 'public.orders'::text)
+                           Buffers: shared hit=148 read=78696
+                           ->  Bitmap Index Scan on audit_logs_2026_03_new_data_idx  (cost=0.00..2707.07 rows=409070 width=0) (actual time=83.228..83.228 rows=499400 loops=1)
+                                 Index Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                                 Buffers: shared hit=148 read=287
+                     ->  Parallel Bitmap Heap Scan on audit_logs_2026_04 audit_logs_7  (cost=42.79..816.57 rows=1919 width=0) (actual time=16.824..21.817 rows=3101 loops=1)
+                           Recheck Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                           Filter: (table_name = 'public.orders'::text)
+                           Buffers: shared hit=4 read=739
+                           ->  Bitmap Index Scan on audit_logs_2026_04_new_data_idx  (cost=0.00..41.97 rows=3262 width=0) (actual time=0.602..0.602 rows=3101 loops=1)
+                                 Index Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                                 Buffers: shared hit=4 read=10
+                     ->  Parallel Bitmap Heap Scan on audit_logs_2025_10 audit_logs_1  (cost=4.16..9.50 rows=1 width=0) (actual time=0.019..0.020 rows=0 loops=1)
+                           Recheck Cond: (table_name = 'public.orders'::text)
+                           Filter: (new_data @> '{"status": "PAID"}'::jsonb)
+                           Buffers: shared hit=2
+                           ->  Bitmap Index Scan on audit_logs_2025_10_table_name_changed_at_idx  (cost=0.00..4.16 rows=2 width=0) (actual time=0.013..0.013 rows=0 loops=1)
+                                 Index Cond: (table_name = 'public.orders'::text)
+                                 Buffers: shared hit=2
+                     ->  Parallel Seq Scan on audit_logs_2026_01 audit_logs_4  (cost=0.00..87823.84 rows=208330 width=0) (actual time=0.055..464.627 rows=500129 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 999871
+                           Buffers: shared read=78449
+                     ->  Parallel Seq Scan on audit_logs_2025_11 audit_logs_2  (cost=0.00..87822.02 rows=202020 width=0) (actual time=0.071..154.527 rows=166357 loops=3)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 333643
+                           Buffers: shared read=78447
+                     ->  Parallel Seq Scan on audit_logs_2025_12 audit_logs_3  (cost=0.00..87818.07 rows=233563 width=0) (actual time=0.061..234.069 rows=249778 loops=2)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 500222
+                           Buffers: shared read=78444
+                     ->  Parallel Seq Scan on audit_logs_2026_02 audit_logs_5  (cost=0.00..87818.02 rows=176749 width=0) (actual time=13.332..455.435 rows=500039 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 999961
+                           Buffers: shared read=78444
+                     ->  Parallel Seq Scan on audit_logs_2026_05 audit_logs_8  (cost=0.00..0.00 rows=1 width=0) (actual time=0.001..0.002 rows=0 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+ Planning:
+   Buffers: shared hit=882 read=112
+ Planning Time: 1.930 ms
+ JIT:
+   Functions: 98
+   Options: Inlining false, Optimization false, Expressions true, Deforming true
+   Timing: Generation 4.394 ms, Inlining 0.000 ms, Optimization 1.592 ms, Emission 41.194 ms, Total 47.180 ms
+ Execution Time: 930.584 ms
+(58 rows)
+
+Time: 933.757 ms
+
+--- Dropping GIN index (drop parent cascades to all partition children)... ---
+DROP INDEX
+Time: 257.440 ms
+--- WITHOUT GIN index ---
+                                                                                 QUERY PLAN                                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=448409.43..448409.44 rows=1 width=8) (actual time=1023.661..1030.802 rows=1 loops=1)
+   Buffers: shared hit=15243 read=377733
+   ->  Gather  (cost=448409.22..448409.43 rows=2 width=8) (actual time=1023.409..1030.776 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=15243 read=377733
+         ->  Partial Aggregate  (cost=447409.22..447409.23 rows=1 width=8) (actual time=993.226..993.231 rows=1 loops=3)
+               Buffers: shared hit=15243 read=377733
+               ->  Parallel Append  (cost=0.00..444928.05 rows=992469 width=0) (actual time=21.623..945.856 rows=833765 loops=3)
+                     Buffers: shared hit=15243 read=377733
+                     ->  Parallel Bitmap Heap Scan on audit_logs_2025_10 audit_logs_1  (cost=4.16..9.50 rows=1 width=0) (actual time=3.883..3.884 rows=0 loops=1)
+                           Recheck Cond: (table_name = 'public.orders'::text)
+                           Filter: (new_data @> '{"status": "PAID"}'::jsonb)
+                           Buffers: shared hit=2
+                           ->  Bitmap Index Scan on audit_logs_2025_10_table_name_changed_at_idx  (cost=0.00..4.16 rows=2 width=0) (actual time=0.004..0.004 rows=0 loops=1)
+                                 Index Cond: (table_name = 'public.orders'::text)
+                                 Buffers: shared hit=2
+                     ->  Parallel Seq Scan on audit_logs_2026_01 audit_logs_4  (cost=0.00..87823.84 rows=208330 width=0) (actual time=25.039..560.771 rows=500129 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 999871
+                           Buffers: shared hit=32 read=78417
+                     ->  Parallel Seq Scan on audit_logs_2025_11 audit_logs_2  (cost=0.00..87822.02 rows=202020 width=0) (actual time=24.188..557.478 rows=499070 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 1000930
+                           Buffers: shared hit=96 read=78351
+                     ->  Parallel Seq Scan on audit_logs_2026_03 audit_logs_6  (cost=0.00..87819.52 rows=170446 width=0) (actual time=0.063..155.678 rows=166467 loops=3)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 333533
+                           Buffers: shared hit=15048 read=63397
+                     ->  Parallel Seq Scan on audit_logs_2025_12 audit_logs_3  (cost=0.00..87818.07 rows=233563 width=0) (actual time=0.063..254.845 rows=249778 loops=2)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 500222
+                           Buffers: shared hit=64 read=78380
+                     ->  Parallel Seq Scan on audit_logs_2026_02 audit_logs_5  (cost=0.00..87818.02 rows=176749 width=0) (actual time=0.040..547.905 rows=500039 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 999961
+                           Buffers: shared read=78444
+                     ->  Parallel Seq Scan on audit_logs_2026_04 audit_logs_7  (cost=0.00..854.73 rows=1919 width=0) (actual time=11.751..20.422 rows=3101 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 9335
+                           Buffers: shared hit=1 read=744
+                     ->  Parallel Seq Scan on audit_logs_2026_05 audit_logs_8  (cost=0.00..0.00 rows=1 width=0) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+ Planning:
+   Buffers: shared hit=136 read=18 dirtied=1
+ Planning Time: 0.881 ms
+ JIT:
+   Functions: 86
+   Options: Inlining false, Optimization false, Expressions true, Deforming true
+   Timing: Generation 8.735 ms, Inlining 0.000 ms, Optimization 3.985 ms, Emission 57.084 ms, Total 69.803 ms
+ Execution Time: 1032.377 ms
+(51 rows)
+
+Time: 1034.080 ms (00:01.034)
+
+--- Recreating GIN index (may take ~2 minutes)... ---
+CREATE INDEX
+Time: 146040.461 ms (02:26.040)
+
+--- Confirm GIN restored: WITH GIN (verify) ---
+                                                                                       QUERY PLAN                                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=448335.57..448335.58 rows=1 width=8) (actual time=2882.573..2896.341 rows=1 loops=1)
+   Buffers: shared hit=1011 read=392360 written=15164
+   ->  Gather  (cost=448335.36..448335.57 rows=2 width=8) (actual time=2880.820..2896.291 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=1011 read=392360 written=15164
+         ->  Partial Aggregate  (cost=447335.36..447335.37 rows=1 width=8) (actual time=2848.573..2848.579 rows=1 loops=3)
+               Buffers: shared hit=1011 read=392360 written=15164
+               ->  Parallel Append  (cost=42.79..444854.05 rows=992523 width=0) (actual time=95.864..2736.164 rows=833765 loops=3)
+                     Buffers: shared hit=1011 read=392360 written=15164
+                     ->  Parallel Bitmap Heap Scan on audit_logs_2026_03 audit_logs_6  (cost=2809.45..87781.36 rows=170455 width=0) (actual time=195.970..2046.084 rows=499400 loops=1)
+                           Recheck Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                           Rows Removed by Index Recheck: 420814
+                           Filter: (table_name = 'public.orders'::text)
+                           Buffers: shared hit=268 read=78576 written=15132
+                           ->  Bitmap Index Scan on audit_logs_2026_03_new_data_idx  (cost=0.00..2707.18 rows=409091 width=0) (actual time=160.352..160.352 rows=499400 loops=1)
+                                 Index Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                                 Buffers: shared hit=268 read=167 written=98
+                     ->  Parallel Bitmap Heap Scan on audit_logs_2026_04 audit_logs_7  (cost=42.79..816.57 rows=1919 width=0) (actual time=42.384..50.986 rows=3101 loops=1)
+                           Recheck Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                           Filter: (table_name = 'public.orders'::text)
+                           Buffers: shared hit=741
+                           ->  Bitmap Index Scan on audit_logs_2026_04_new_data_idx  (cost=0.00..41.97 rows=3262 width=0) (actual time=2.689..2.689 rows=3101 loops=1)
+                                 Index Cond: (new_data @> '{"status": "PAID"}'::jsonb)
+                                 Buffers: shared hit=12
+                     ->  Parallel Bitmap Heap Scan on audit_logs_2025_10 audit_logs_1  (cost=4.16..9.50 rows=1 width=0) (actual time=0.023..0.024 rows=0 loops=1)
+                           Recheck Cond: (table_name = 'public.orders'::text)
+                           Filter: (new_data @> '{"status": "PAID"}'::jsonb)
+                           Buffers: shared hit=2
+                           ->  Bitmap Index Scan on audit_logs_2025_10_table_name_changed_at_idx  (cost=0.00..4.16 rows=2 width=0) (actual time=0.020..0.020 rows=0 loops=1)
+                                 Index Cond: (table_name = 'public.orders'::text)
+                                 Buffers: shared hit=2
+                     ->  Parallel Seq Scan on audit_logs_2026_01 audit_logs_4  (cost=0.00..87824.00 rows=208333 width=0) (actual time=0.142..1330.863 rows=500129 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 999871
+                           Buffers: shared read=78449
+                     ->  Parallel Seq Scan on audit_logs_2025_11 audit_logs_2  (cost=0.00..87822.00 rows=202020 width=0) (actual time=0.128..575.650 rows=166357 loops=3)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 333643
+                           Buffers: shared read=78447
+                     ->  Parallel Seq Scan on audit_logs_2025_12 audit_logs_3  (cost=0.00..87819.00 rows=233586 width=0) (actual time=0.231..649.990 rows=249778 loops=2)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 500222
+                           Buffers: shared read=78444
+                     ->  Parallel Seq Scan on audit_logs_2026_02 audit_logs_5  (cost=0.00..87819.00 rows=176768 width=0) (actual time=49.230..1350.609 rows=500039 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+                           Rows Removed by Filter: 999961
+                           Buffers: shared read=78444 written=32
+                     ->  Parallel Seq Scan on audit_logs_2026_05 audit_logs_8  (cost=0.00..0.00 rows=1 width=0) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: ((new_data @> '{"status": "PAID"}'::jsonb) AND (table_name = 'public.orders'::text))
+ Planning:
+   Buffers: shared hit=251 read=24 written=24
+ Planning Time: 1.198 ms
+ JIT:
+   Functions: 98
+   Options: Inlining false, Optimization false, Expressions true, Deforming true
+   Timing: Generation 6.415 ms, Inlining 0.000 ms, Optimization 3.857 ms, Emission 107.745 ms, Total 118.018 ms
+ Execution Time: 2898.358 ms
+(58 rows)
+
+Time: 2901.157 ms (00:02.901)
+Timing is off.
+=== Scenario 4 done. Compare execution times above. ===
+

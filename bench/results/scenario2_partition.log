@@ -1,0 +1,61 @@
+=== Scenario 2: Partitioning & Retention ===
+Timing is on.
+
+--- 2a. Partition pruning EXPLAIN ---
+                                                                                                   QUERY PLAN                                                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=40275.85..40275.86 rows=1 width=8) (actual time=348.105..351.798 rows=1 loops=1)
+   Buffers: shared hit=937857 read=4098 written=538
+   ->  Gather  (cost=40275.64..40275.85 rows=2 width=8) (actual time=347.955..351.789 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=937857 read=4098 written=538
+         ->  Partial Aggregate  (cost=39275.64..39275.65 rows=1 width=8) (actual time=344.529..344.530 rows=1 loops=3)
+               Buffers: shared hit=937857 read=4098 written=538
+               ->  Parallel Index Only Scan using audit_logs_2026_03_changed_at_idx on audit_logs_2026_03 audit_logs  (cost=0.43..37713.22 rows=624965 width=0) (actual time=0.100..312.949 rows=500000 loops=3)
+                     Index Cond: ((changed_at >= '2026-03-01 00:00:00'::timestamp without time zone) AND (changed_at <= '2026-03-31 00:00:00'::timestamp without time zone))
+                     Heap Fetches: 0
+                     Buffers: shared hit=937857 read=4098 written=538
+ Planning:
+   Buffers: shared hit=330 read=5
+ Planning Time: 1.198 ms
+ Execution Time: 351.857 ms
+(16 rows)
+
+Time: 354.815 ms
+
+--- 2b. Seed 1,000,000 rows vào partition test (2025-10) ---
+ALTER TABLE
+Time: 21.220 ms
+INSERT 0 1000000
+Time: 120818.736 ms (02:00.819)
+ALTER TABLE
+Time: 40.419 ms
+  1,000,000 rows seeded into audit_logs_2025_10
+
+--- Measuring DELETE (traditional) on 2025-10 copy ---
+CREATE TABLE
+Time: 278.789 ms
+INSERT 0 1000000
+Time: 40144.181 ms (00:40.144)
+DELETE on 1M rows:
+DELETE 1000000
+Time: 641.598 ms
+DROP TABLE
+Time: 58.459 ms
+
+--- Measuring DROP PARTITION on audit_logs_2025_10 (1M rows) ---
+DROP PARTITION:
+DROP TABLE
+Time: 46.789 ms
+
+--- Recreate partition 2025-10 for idempotency ---
+ func_create_monthly_partition 
+-------------------------------
+ audit_logs_2025_10
+(1 row)
+
+Time: 18.314 ms
+Timing is off.
+=== Scenario 2 done. Compare DELETE vs DROP times above. ===
+
