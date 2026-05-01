@@ -4,6 +4,30 @@ Research project: high-performance audit log system on PostgreSQL 16.
 
 ## Quick start (từ máy trắng)
 
+### Cách 1: Docker (Khuyến nghị)
+
+```bash
+# 1. Clone repository
+git clone <repo-url>
+cd csdl
+
+# 2. Copy và chỉnh sửa cấu hình (tùy chọn)
+cp .env.example .env
+# Chỉnh sửa .env theo nhu cầu
+
+# 3. Khởi động PostgreSQL qua Docker
+docker-compose up -d
+
+# 4. Chạy benchmark
+bash bench/run_baseline.sh
+bash bench/run_proposed.sh
+
+# 5. Xem kết quả performance
+bash bench/analyze_performance.sh
+```
+
+### Cách 2: Local PostgreSQL
+
 ```bash
 # 1. Prerequisites
 #    PostgreSQL 16, psql, pgbench — đã có sẵn trên Ubuntu 22.04 WSL2
@@ -29,16 +53,45 @@ psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=
 # 7. (Optional) Hash chain
 psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/06_hash_chain.sql
 
-# 8. Indexes
+# 8. (Optional) DDL Audit - Audit các thay đổi schema
+psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/09_audit_ddl.sql
+
+# 9. Indexes
 psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/07_indexes.sql
 
-# 9. GRANT/REVOKE
+# 10. GRANT/REVOKE
 psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/08_grants.sql
 
-# 10. Benchmark
+# 11. Benchmark
 bash bench/run_baseline.sh
 bash bench/run_proposed.sh
 ```
+
+## Tính năng mới (Recent Enhancements)
+
+### 📊 Performance Monitoring
+- **pg_stat_statements**: Tự động bật trong benchmark để theo dõi hiệu năng
+- **analyze_performance.sh**: Phân tích truy vấn chậm, tần suất gọi, và tác động của audit trigger
+- **monitor.sh**: Real-time monitoring trong khi chạy benchmark (kết nối, TPS, WAL, cache hit ratio)
+
+### 🔍 DDL Audit Support
+- **sql/09_audit_ddl.sql**: Event trigger ghi lại các thay đổi schema (CREATE, ALTER, DROP)
+- Lưu trữ trong bảng `audit_ddl_logs` với thông tin người dùng và câu lệnh SQL
+
+### 🐳 Docker Support
+- **docker-compose.yml**: Khởi chạy PostgreSQL 16 với pg_stat_statements sẵn sàng
+- **Adminer**: Web interface quản lý database tại http://localhost:8080
+- Cấu hình qua file `.env` (copy từ `.env.example`)
+
+### 🗂️ Partition Management
+- **scripts/manage_partitions.sh**: Quản lý partition tự động
+  - `create`: Tạo partition cho 3 tháng tới
+  - `drop_old`: Xóa partition cũ (mặc định > 6 tháng)
+  - `list`: Liệt kê tất cả partition và kích thước
+
+### 📖 Enhanced Documentation
+- **docs/GETTING_STARTED.md**: Hướng dẫn chi tiết từng bước với Docker và local setup
+- Tích hợp performance monitoring và DDL audit vào workflow
 
 ## Reset
 
