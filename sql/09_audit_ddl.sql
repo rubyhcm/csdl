@@ -1,7 +1,7 @@
 -- ------------------------------------------------------------
 -- File: 09_audit_ddl.sql
 -- Purpose: Event trigger to audit DDL statements (CREATE, ALTER,
---          DROP, etc.) and store them in the audit_logs table.
+--          DROP, etc.) and store them in the audit_ddl_logs table.
 -- ------------------------------------------------------------
 
 -- Create a table to store DDL audit entries (if not already present)
@@ -64,3 +64,9 @@ DROP EVENT TRIGGER IF EXISTS audit_ddl_trigger;
 CREATE EVENT TRIGGER audit_ddl_trigger
    ON ddl_command_end
    EXECUTE FUNCTION func_audit_ddl();
+
+-- Grant read access to auditor (mirrors the pattern in 08_grants.sql)
+GRANT SELECT ON public.audit_ddl_logs TO auditor;
+
+-- app_user must not read DDL audit logs
+REVOKE ALL ON public.audit_ddl_logs FROM PUBLIC, app_user;

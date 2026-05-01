@@ -46,35 +46,53 @@ This guide walks you through setting up and running the **Audit Log PoC** on a f
 5. **Bootstrap the schema**
 
    ```bash
-   psql "postgresql://postgres:postgres@localhost/audit_poc" -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
    psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/01_schema_audit.sql
    psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/02_schema_business.sql
    ```
 
-6. **(Optional) Load additional audit objects**
+6. **Seed data (~5–8 GB, may take a few minutes)**
 
-   ```bash
-   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/09_audit_ddl.sql
-   ```
-
-7. **Seed data (may take a few minutes)**
+   Seed chạy được cả TRƯỚC và SAU khi tạo audit triggers — script tự kiểm tra trigger tồn tại.
 
    ```bash
    psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/03_seed_data.sql
    ```
 
-8. **Run the benchmark**
+7. **Audit trigger function + immutability**
 
    ```bash
-   bash bench/run_baseline.sh
-   bash bench/run_proposed.sh
+   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/04_audit_function.sql
+   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/05_security_immutability.sql
    ```
 
-   After each run the scripts will output **performance metrics** collected via `pg_stat_statements` (see *Performance Monitoring* below).
+8. **(Optional) Hash chain tamper-evident + DDL audit**
+
+   `06_hash_chain.sql` cài `pgcrypto` tự động. `09_audit_ddl.sql` kích hoạt event trigger cho DDL.
+
+   ```bash
+   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/06_hash_chain.sql
+   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/09_audit_ddl.sql
+   ```
+
+9. **Indexes và phân quyền**
+
+   ```bash
+   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/07_indexes.sql
+   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/08_grants.sql
+   ```
+
+10. **Run the benchmark**
+
+    ```bash
+    bash bench/run_baseline.sh
+    bash bench/run_proposed.sh
+    ```
+
+    After each run the scripts will output **performance metrics** collected via `pg_stat_statements` (see *Performance Monitoring* below).
 
 ## Running without Docker
 
-If you prefer a local PostgreSQL 16 installation, make sure `pgcrypto` and `pg_stat_statements` extensions are available, then follow steps **4–8** above directly against your local server.
+If you prefer a local PostgreSQL 16 installation, make sure PostgreSQL 16 and `pgbench` are installed, then follow steps **4–10** above directly against your local server. `pgcrypto` và `dblink` sẽ được cài tự động bởi `06_hash_chain.sql` và `05_security_immutability.sql`.
 
 ## Performance Monitoring
 

@@ -1,5 +1,5 @@
 -- Phase 3 (optional): tamper-evident hash chain for audit_logs
--- Requires: pgcrypto extension (already installed in Phase 0)
+-- Requires: pgcrypto extension (installed below via CREATE EXTENSION IF NOT EXISTS)
 -- Run as db_admin:
 --   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/06_hash_chain.sql
 --
@@ -7,6 +7,8 @@
 -- Disable this trigger before large seed runs (sql/03_seed_data.sql).
 
 \echo '=== 06_hash_chain.sql ==='
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Columns already added in 01_schema_audit.sql (prev_hash BYTEA, hash BYTEA)
 

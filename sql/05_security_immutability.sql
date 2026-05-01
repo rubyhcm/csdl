@@ -4,6 +4,9 @@
 
 \echo '=== 05_security_immutability.sql ==='
 
+-- dblink extension required for autonomous-transaction alert writes
+CREATE EXTENSION IF NOT EXISTS dblink;
+
 -- ────────────────────────────────────────────────
 -- 1. Function chặn UPDATE/DELETE + ghi security_alerts
 --    INSERT alert qua dblink (autonomous transaction) để không bị rollback

@@ -22,8 +22,9 @@ psql "$DB" -c "
 "
 
 # Truncate current-month partition to avoid I/O skew from baseline run
-psql "$DB" -c "TRUNCATE audit_logs_2026_04;" > /dev/null
-echo "Hot partition cleared. Starting $RUNS runs ($CLIENTS clients, ${DURATION}s each)..."
+CURRENT_PARTITION="audit_logs_$(date '+%Y_%m')"
+psql "$DB" -c "TRUNCATE ${CURRENT_PARTITION};" > /dev/null
+echo "Hot partition (${CURRENT_PARTITION}) cleared. Starting $RUNS runs ($CLIENTS clients, ${DURATION}s each)..."
 
 for i in $(seq 1 $RUNS); do
   echo ""

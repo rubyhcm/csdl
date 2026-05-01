@@ -14,12 +14,20 @@ FROM audit_logs
 WHERE changed_at BETWEEN '2026-03-01' AND '2026-03-31';
 
 -- ── 2b. DROP PARTITION vs DELETE truyền thống ────────────────────────────────
--- Dùng partition 2025-10 (rỗng, safe để thử)
--- Tạo lại với dữ liệu test để đo thời gian thực tế
+-- Dùng partition 2025-10 (ngoài range bootstrap, tạo mới để không ảnh hưởng data thật)
 
 \echo ''
-\echo '--- 2b. Seed 1,000,000 rows vào partition test (2025-10) ---'
-ALTER TABLE audit_logs DISABLE TRIGGER trg_audit_hash;
+\echo '--- 2b. Ensure partition audit_logs_2025_10 exists (create if needed) ---'
+SELECT func_create_monthly_partition('2025-10-01'::date);
+
+\echo '--- Seed 1,000,000 rows vào partition test (2025-10) ---'
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_hash'
+               AND tgrelid = 'audit_logs'::regclass) THEN
+        ALTER TABLE audit_logs DISABLE TRIGGER trg_audit_hash;
+    END IF;
+END$$;
 
 INSERT INTO audit_logs_2025_10
     (table_name, operation, user_name, old_data, new_data, changed_at)
@@ -30,7 +38,13 @@ SELECT
     '2025-10-01'::timestamp + (i % 2592000) * interval '1 second'
 FROM generate_series(1, 1000000) i;
 
-ALTER TABLE audit_logs ENABLE TRIGGER trg_audit_hash;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_hash'
+               AND tgrelid = 'audit_logs'::regclass) THEN
+        ALTER TABLE audit_logs ENABLE TRIGGER trg_audit_hash;
+    END IF;
+END$$;
 
 \echo '  1,000,000 rows seeded into audit_logs_2025_10'
 

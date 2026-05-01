@@ -33,9 +33,9 @@ bash bench/analyze_performance.sh
 #    PostgreSQL 16, psql, pgbench — đã có sẵn trên Ubuntu 22.04 WSL2
 
 # 2. Bootstrap database (run as superuser)
-psql "postgresql://postgres:postgres@localhost/postgres" -c "CREATE DATABASE audit_poc OWNER db_admin;"
+#    Roles phải tồn tại TRƯỚC khi tạo database với OWNER db_admin
 psql "postgresql://postgres:postgres@localhost/postgres" -f sql/00_roles.sql
-psql "postgresql://postgres:postgres@localhost/audit_poc" -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+psql "postgresql://postgres:postgres@localhost/postgres" -c "CREATE DATABASE audit_poc OWNER db_admin;"
 
 # 3. Schema
 psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/01_schema_audit.sql

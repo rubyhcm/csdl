@@ -445,7 +445,7 @@ Query: `SELECT count(*) FROM audit_logs WHERE new_data @> '{"status":"PAID"}'` t
 2. **Throughput giới hạn**: Thiết kế trigger-based không phù hợp khi yêu cầu >10.000 TPS — ở mức đó nên chuyển sang CDC/Debezium hoặc logical replication.
 3. **Hash chain và concurrency**: `func_audit_hash_chain` dùng `SELECT ... LIMIT 1` để lấy `prev_hash`, không an toàn tuyệt đối khi có nhiều transaction ghi đồng thời vào cùng partition (race condition trên `prev_hash`). Trong PoC, điều này chấp nhận được; production cần dùng `SELECT ... FOR UPDATE` hoặc sequence-based chain.
 4. **dblink connection overhead**: Mỗi lần trigger `func_prevent_audit_change` bị kích hoạt đều mở thêm 1 kết nối `dblink` để ghi `security_alerts`. Trong điều kiện bình thường (không có tấn công), overhead này = 0. Khi bị tấn công liên tục, connection pool của dblink có thể bị cạn.
-5. **Phạm vi audit**: Đề tài chỉ audit DML (`INSERT/UPDATE/DELETE`); không bao gồm DDL, `TRUNCATE`, hay thay đổi quyền hạn (cần `pgAudit` hoặc event trigger).
+5. **Phạm vi audit**: Đề tài tập trung audit DML (`INSERT/UPDATE/DELETE`). DDL audit (`CREATE/ALTER/DROP`) được bổ sung tùy chọn qua `sql/09_audit_ddl.sql` (event trigger, lưu vào bảng `audit_ddl_logs` riêng biệt). `TRUNCATE` và thay đổi quyền hạn chưa được bao gồm — trường hợp đó cần kết hợp `pgAudit`.
 
 ---
 
@@ -533,6 +533,7 @@ Xem các file SQL trong thư mục `sql/`:
 | `sql/04_audit_function.sql` | `func_audit_trigger()` — generic audit trigger, SECURITY DEFINER, session_user |
 | `sql/05_security_immutability.sql` | `func_prevent_audit_change()` — immutability trigger + dblink alert |
 | `sql/06_hash_chain.sql` | `func_audit_hash_chain()` — SHA-256 hash chain; `func_verify_hash_chain()` — verifier |
+| `sql/09_audit_ddl.sql` | `func_audit_ddl()` — event trigger audit DDL (CREATE/ALTER/DROP), lưu vào `audit_ddl_logs` |
 
 ### Phụ lục C — Script benchmark
 
@@ -541,8 +542,13 @@ Xem các file SQL trong thư mục `sql/`:
 | `bench/update_orders.sql` | pgbench script: UPDATE ngẫu nhiên 1 đơn hàng |
 | `bench/run_baseline.sh` | 5 lần baseline (trigger disabled), in TPS/latency |
 | `bench/run_proposed.sh` | 5 lần proposed (trigger enabled), tính overhead vs baseline |
-| `verify/q_partition_pruning.sql` | Đo DROP PARTITION vs DELETE; EXPLAIN pruning |
-| `verify/q_gin_comparison.sql` | Đo JSONB query có/không GIN index |
+| `bench/analyze_performance.sh` | Phân tích pg_stat_statements: top queries, audit impact |
+| `bench/monitor.sh` | Real-time monitoring: connections, TPS, WAL, cache hit ratio |
+| `verify/q_partition_pruning.sql` | Đo DROP PARTITION vs DELETE; EXPLAIN partition pruning |
+| `verify/q_gin_comparison.sql` | Đo JSONB query có/không GIN index (auto drop/recreate) |
+| `verify/q_security_demo.sql` | Demo 3 kịch bản tấn công (PASS/FAIL) |
+| `verify/q_jsonb_examples.sql` | Ví dụ truy vấn JSONB phục vụ kiểm toán |
+| `verify/q_hash_verifier.sql` | Kiểm tra tính toàn vẹn hash chain |
 
 ### Phụ lục D — Truy vấn mẫu phục vụ kiểm toán
 

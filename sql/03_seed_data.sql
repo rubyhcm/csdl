@@ -16,16 +16,43 @@
 -- ────────────────────────────────────────────────
 \echo '--- 0. Cleaning existing data ---'
 
-ALTER TABLE orders   DISABLE TRIGGER trg_audit_orders;
-ALTER TABLE products DISABLE TRIGGER trg_audit_products;
-ALTER TABLE audit_logs DISABLE TRIGGER trg_audit_hash;
+-- Disable business triggers only if they exist (seed may run before 04_audit_function.sql)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_orders'
+               AND tgrelid = 'orders'::regclass) THEN
+        ALTER TABLE orders DISABLE TRIGGER trg_audit_orders;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_products'
+               AND tgrelid = 'products'::regclass) THEN
+        ALTER TABLE products DISABLE TRIGGER trg_audit_products;
+    END IF;
+END$$;
+
+-- Disable hash chain trigger only if it exists (06_hash_chain.sql may not have been run yet)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_hash'
+               AND tgrelid = 'audit_logs'::regclass) THEN
+        ALTER TABLE audit_logs DISABLE TRIGGER trg_audit_hash;
+    END IF;
+END$$;
 
 TRUNCATE orders, products;
 
--- Clear all audit partition data (keep structure)
-TRUNCATE audit_logs_2025_10, audit_logs_2025_11, audit_logs_2025_12,
-         audit_logs_2026_01, audit_logs_2026_02, audit_logs_2026_03,
-         audit_logs_2026_04, audit_logs_2026_05;
+-- Clear all audit partition children (dynamic — handles any bootstrap date)
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN
+        SELECT inhrelid::regclass::text AS pname
+        FROM pg_inherits
+        WHERE inhparent = 'audit_logs'::regclass
+    LOOP
+        EXECUTE format('TRUNCATE %s', r.pname);
+    END LOOP;
+END$$;
 
 -- Clear test alerts
 TRUNCATE security_alerts;
@@ -64,9 +91,18 @@ FROM generate_series(1, 100000) gs;
 
 \echo '--- products: done ---'
 
--- Re-enable business triggers
-ALTER TABLE orders   ENABLE TRIGGER trg_audit_orders;
-ALTER TABLE products ENABLE TRIGGER trg_audit_products;
+-- Re-enable business triggers (only if they exist)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_orders'
+               AND tgrelid = 'orders'::regclass) THEN
+        ALTER TABLE orders ENABLE TRIGGER trg_audit_orders;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_products'
+               AND tgrelid = 'products'::regclass) THEN
+        ALTER TABLE products ENABLE TRIGGER trg_audit_products;
+    END IF;
+END$$;
 
 -- ────────────────────────────────────────────────
 -- 3. Seed historical audit_logs: 5 cold partitions x 1,500,000 rows
@@ -204,8 +240,14 @@ FROM generate_series(1, 1500000);
 
 \echo '--- audit_logs history: done ---'
 
--- Re-enable hash chain trigger
-ALTER TABLE audit_logs ENABLE TRIGGER trg_audit_hash;
+-- Re-enable hash chain trigger (only if it was created by 06_hash_chain.sql)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_audit_hash'
+               AND tgrelid = 'audit_logs'::regclass) THEN
+        ALTER TABLE audit_logs ENABLE TRIGGER trg_audit_hash;
+    END IF;
+END$$;
 
 -- ────────────────────────────────────────────────
 -- 4. VACUUM ANALYZE
