@@ -12,10 +12,23 @@
 
 ## MỞ ĐẦU
 ### 1. Đặt vấn đề và tính cấp thiết
-[Nêu nhu cầu biết “ai sửa gì/khi nào/giá trị cũ-mới”, tính tuân thủ, rủi ro khi thiếu audit log. Nhấn mạnh bài toán write-heavy và 3 thách thức: lưu trữ, độ trễ, an toàn.]
+
+Trong các hệ thống tài chính, ngân hàng và thương mại điện tử hiện đại, mọi thao tác thay đổi dữ liệu — từ cập nhật trạng thái đơn hàng, điều chỉnh số dư tài khoản, đến sửa thông tin nhân sự — đều cần được ghi nhận đầy đủ và trung thực. Nhu cầu này xuất phát từ ba áp lực thực tiễn:
+
+- **Tuân thủ pháp lý và kiểm toán**: Các chuẩn mực như SOX, PCI-DSS, ISO 27001 yêu cầu tổ chức có khả năng trả lời câu hỏi “ai đã thay đổi gì, vào lúc nào, giá trị cũ và mới là bao nhiêu” cho bất kỳ bản ghi nào trong vòng nhiều năm. Thiếu audit trail đầy đủ dẫn đến không vượt qua kiểm toán và chịu phạt hành chính.
+- **Phát hiện gian lận và điều tra sự cố**: Chuỗi thay đổi bất thường — cùng một tài khoản thực hiện loạt giao dịch nhỏ liên tiếp, hoặc trạng thái đơn hàng bị sửa ngược chiều quy trình — là dấu hiệu phát hiện sớm gian lận. Không có audit log, điều tra trở nên không thể.
+- **Khôi phục và phân tích nguyên nhân gốc rễ**: Khi xảy ra lỗi dữ liệu hoặc bug hệ thống, audit log cho phép replay lại chuỗi sự kiện để xác định điểm gãy và phục hồi trạng thái đúng.
+
+Tuy nhiên, triển khai hệ thống Audit Log trong môi trường **write-heavy** (hàng nghìn giao dịch/giây) đặt ra ba thách thức kỹ thuật lớn đồng thời:
+
+- **Thách thức lưu trữ**: Mỗi giao dịch sinh ít nhất một log row với đầy đủ giá trị cũ/mới — khối lượng tích lũy theo thời gian lên đến hàng triệu dòng, hàng chục GB. Quản lý không hiệu quả dẫn đến bảng phình to, scan chậm và chi phí lưu trữ tăng không kiểm soát.
+- **Thách thức hiệu năng**: Mỗi INSERT/UPDATE/DELETE nghiệp vụ kéo theo ít nhất một thao tác ghi log bổ sung. Nếu overhead này không được kiểm soát, throughput hệ thống suy giảm, ảnh hưởng trực tiếp đến trải nghiệm người dùng và SLA.
+- **Thách thức an toàn**: Bản thân audit log là mục tiêu tấn công — kẻ gian có thể xóa hoặc sửa log sau khi thực hiện hành vi gian lận để xóa bằng chứng. Hệ thống cần cơ chế **bất biến** (immutability) và **chống giả mạo có thể kiểm chứng** (tamper-evident) độc lập với quyền database admin.
+
+Đề tài này nghiên cứu và xây dựng giải pháp giải quyết đồng thời ba thách thức trên, thuần túy dựa vào các cơ chế gốc của PostgreSQL 16 (Trigger, JSONB, Declarative Partitioning, SECURITY DEFINER, pgcrypto) mà không phụ thuộc công cụ bên ngoài, phù hợp với hạ tầng cơ sở dữ liệu quan hệ phổ biến hiện nay.
 
 ### 2. Mục tiêu nghiên cứu
-- **Mục tiêu tổng quát**: [Tối ưu kiến trúc audit log trên PostgreSQL để ghi log tự động, lưu trữ linh hoạt, truy xuất nhanh và chống can thiệp].
+- **Mục tiêu tổng quát**: Thiết kế và triển khai kiến trúc Audit Log hiệu năng cao trên PostgreSQL 16, tích hợp trực tiếp vào tầng cơ sở dữ liệu: ghi log tự động không cần sửa mã ứng dụng, lưu trữ linh hoạt đa cấu trúc, truy xuất nhanh theo thời gian và nội dung JSONB, và đảm bảo tính bất biến có thể kiểm chứng độc lập.
 - **Mục tiêu cụ thể**:
   - (1) **Lưu trữ** linh hoạt đa cấu trúc bằng JSONB và truy vấn có cấu trúc.
   - (2) **Xử lý/Hiệu năng**: đảm bảo overhead thấp, không làm chậm giao dịch nghiệp vụ.
@@ -47,7 +60,7 @@
 
 ### 6. Đối tượng và phạm vi nghiên cứu
 - Đối tượng: PostgreSQL 16; trigger/PL/pgSQL; JSONB; partitioning; cơ chế phân quyền.
-- Phạm vi: [mô hình PoC], tập trung audit DML; không bao gồm streaming real-time ở throughput cực cao.
+- Phạm vi: Mô hình PoC (Proof-of-Concept) trên môi trường đơn node — tập trung audit DML (INSERT/UPDATE/DELETE) và DDL (optional). Không bao gồm streaming real-time ở throughput cực cao (>10.000 TPS), kiến trúc multi-node HA, hay tích hợp message broker.
 
 ### 7. Đóng góp của đề tài
 - (C1) Mô hình audit log schema-less bằng JSONB + GIN.
@@ -57,7 +70,15 @@
 - (C5) Bộ kịch bản benchmark/đánh giá định lượng.
 
 ### 8. Bố cục báo cáo
-[Tóm tắt cấu trúc chương như dưới.]
+
+Báo cáo được tổ chức thành 5 chương và phần phụ lục:
+
+- **Chương 1 — Tổng quan và Cơ sở lý thuyết**: Trình bày tổng quan các giải pháp audit log hiện có (WAL-based, Extension, CDC), phân tích lý do lựa chọn hướng tiếp cận Trigger + JSONB + Partitioning trên PostgreSQL.
+- **Chương 2 — Phương pháp đề xuất và Thiết kế hệ thống**: Mô tả kiến trúc tổng quan, thiết kế schema bảng `audit_logs` (partitioned, JSONB), chiến lược indexing và phân tích đánh đổi kỹ thuật.
+- **Chương 3 — Triển khai cơ chế ghi log và Quản lý vòng đời**: Chi tiết hàm trigger PL/pgSQL generic, cơ chế bật/tắt audit cho từng bảng, tối ưu đường ghi, và quản lý retention/archiving theo partition.
+- **Chương 4 — An toàn, Bảo mật và Chống can thiệp log**: Mô hình phân quyền ba lớp (app_user/auditor/db_admin), cơ chế Immutability (WORM), tamper-evident hash chain SHA-256, và giám sát cảnh báo qua `security_alerts`.
+- **Chương 5 — Thực nghiệm, Kiểm thử và Đánh giá**: Kết quả 4 kịch bản benchmark (TPS/latency, partitioning/retention, bảo mật, JSONB query performance) với số liệu định lượng và phân tích.
+- **Phụ lục A–D**: DDL đầy đủ, code PL/pgSQL, script benchmark và verify, truy vấn mẫu kiểm toán.
 
 ---
 
@@ -68,21 +89,46 @@
 - Ba thách thức: **Storage**, **Processing/Latency**, **Security**.
 
 ### 1.2. Tổng quan các giải pháp hiện nay
-- (1) Logical Decoding/WAL-based
-- (2) Extension (ví dụ: pgAudit)
-- (3) CDC/Streaming (ví dụ: Debezium)
+
+#### (1) Logical Decoding / WAL-based
+PostgreSQL ghi mọi thay đổi dữ liệu vào Write-Ahead Log (WAL) để đảm bảo durability. Logical Decoding (giới thiệu từ PostgreSQL 9.4) cho phép đọc WAL dưới dạng sự kiện thay đổi có ngữ nghĩa cấp hàng. Plugin phổ biến: `wal2json`, `pgoutput` (built-in). Ưu điểm: không overhead trigger, không thay đổi schema ứng dụng, throughput cao. Nhược điểm: stream không có application context (không biết user HTTP/session), cần consumer bên ngoài để persist log, phức tạp khi cần truy vấn audit theo cấu trúc.
+
+#### (2) Extension — pgAudit
+`pgAudit` là extension chính thức của PostgreSQL, ghi audit theo statement hoặc object level vào `pg_log`. Ưu điểm: dễ cài, audit granular theo schema/table/role, được chứng nhận PCI-DSS. Nhược điểm: log dạng text file (không structured query), không lưu OLD/NEW values, khó tích hợp vào hệ thống tra cứu nội bộ.
+
+#### (3) CDC / Streaming — Debezium + Kafka
+Change Data Capture ở tầng Logical Replication Slot, đẩy sự kiện ra Kafka topic. Ưu điểm: throughput cực cao, real-time, tích hợp tốt với microservices. Nhược điểm: phụ thuộc hạ tầng ngoài (Kafka, Zookeeper/KRaft), không có structured query trực tiếp trên PostgreSQL, chi phí vận hành cao, phức tạp khi PoC đơn giản.
 
 ### 1.3. So sánh giải pháp và lựa chọn hướng tiếp cận
-- Bảng so sánh theo tiêu chí: Structured Query, Real-time, Application Context, Độ phức tạp, Chi phí vận hành.
-- Lý do chọn: **Trigger + JSONB + Partitioning** (truy vấn có cấu trúc, có application context, độ phức tạp vừa phải).
+
+**Bảng 1.1 — So sánh các giải pháp Audit Log**
+
+| Tiêu chí | WAL/Logical Decoding | pgAudit | CDC/Debezium | **Trigger + JSONB** |
+|---|---|---|---|---|
+| Structured Query (SQL) | Không | Không | Không | **Có** |
+| Lưu OLD/NEW values | Có (raw) | Không | Có (raw) | **Có (JSONB)** |
+| Application Context (user, session) | Không | Một phần | Không | **Có** |
+| Real-time streaming | Có | Không | Có | Không |
+| Phụ thuộc hạ tầng ngoài | Thấp | Không | **Cao** (Kafka) | Không |
+| Throughput (TPS max) | Rất cao | Cao | Rất cao | Trung bình |
+| Độ phức tạp vận hành | Cao | Thấp | **Rất cao** | **Thấp** |
+| Phù hợp PoC đơn node | Không | Có | Không | **Có** |
+
+**Lý do chọn Trigger + JSONB + Partitioning**: Đề tài ưu tiên (a) truy vấn có cấu trúc trực tiếp qua SQL — yêu cầu kiểm toán thực tế cần JOIN, GROUP BY, điều kiện JSONB; (b) lưu đúng application context (ai, từ session nào); (c) không phụ thuộc hạ tầng ngoài — phù hợp môi trường PoC và hạ tầng cơ sở dữ liệu quan hệ phổ biến. Nhược điểm về throughput (phù hợp đến ~10.000 TPS) được chấp nhận vì phạm vi PoC không yêu cầu real-time streaming cực cao.
 
 ### 1.4. Giới hạn áp dụng
-- Không phù hợp: yêu cầu real-time streaming; throughput cực cao (>10k TPS); microservices đa database.
+
+Giải pháp Trigger + JSONB không phù hợp trong các tình huống: (a) yêu cầu real-time streaming sự kiện sang hệ thống bên ngoài (SIEM, analytics pipeline); (b) throughput cực cao (>10.000 TPS) — overhead trigger trở thành bottleneck; (c) kiến trúc microservices đa database dị cấu — mỗi service có CSDL riêng, cần event bus trung tâm; (d) môi trường không dùng PostgreSQL (MySQL, Oracle) — phụ thuộc vào cú pháp và cơ chế đặc thù PostgreSQL.
 
 ### 1.5. Tại sao chọn PostgreSQL cho đề tài?
-- **JSONB**: hỗ trợ lưu bán cấu trúc và truy vấn/đánh chỉ mục hiệu quả (GIN), phù hợp schema-less logging.
-- **Native Partitioning**: quản trị vật lý rõ ràng, hỗ trợ partition pruning và tách tablespace cho tối ưu chi phí.
-- **Security Definer**: cơ chế ủy quyền trong function linh hoạt, giải quyết bài toán phân quyền khi trigger ghi log.
+
+PostgreSQL 16 cung cấp đầy đủ các primitive cần thiết để xây dựng audit log enterprise-grade mà không cần extension bên ngoài:
+
+- **JSONB**: Binary JSON đã parse, hỗ trợ toán tử containment (`@>`), trích xuất key (`->`, `->>`), và đặc biệt là **GIN Index** — cho phép đánh chỉ mục toàn bộ nội dung JSON để tìm kiếm theo key/value bên trong cột mà không cần schema cố định.
+- **Declarative Partitioning**: `PARTITION BY RANGE` tách bảng vật lý theo tháng, planner tự động **partition pruning** — loại phân vùng không liên quan khi truy vấn theo thời gian. `DROP TABLE partition` xóa file OS-level, nhanh hơn `DELETE` ~14× với 1M rows.
+- **PL/pgSQL + SECURITY DEFINER**: Viết stored procedure phức tạp thuần SQL/PL/pgSQL không cần ngôn ngữ ngoài; `SECURITY DEFINER` cho phép function chạy dưới quyền owner trong khi vẫn truy xuất identity caller qua `session_user`.
+- **pgcrypto + dblink**: Extension built-in (không cần cài thêm binary): `pgcrypto.digest()` tính SHA-256 cho hash chain; `dblink` thực hiện autonomous transaction để commit alert độc lập.
+- **Event Trigger**: `ON ddl_command_end` bắt DDL (CREATE/ALTER/DROP) ở cấp database — bổ sung cho DML trigger để coverage audit toàn diện.
 
 ---
 
@@ -196,9 +242,16 @@ CREATE TABLE audit_logs (
   - Partition “nguội” trên HDD/SATA để tối ưu chi phí.
 
 ### 2.5. Phân tích đánh đổi (Trade-offs)
-- JSONB: linh hoạt ↔ tốn storage/độ phức tạp truy vấn.
-- Trigger: không sửa code app ↔ tăng latency/khó debug.
-- Partitioning: quản lý vòng đời tốt ↔ cross-partition query có thể chậm.
+
+**Bảng 2.1 — Phân tích đánh đổi thiết kế**
+
+| Quyết định | Lợi ích | Chi phí / Rủi ro | Ngưỡng chấp nhận |
+|---|---|---|---|
+| **JSONB** thay vì cột riêng | 1 bảng audit cho nhiều table; không migration khi schema nghiệp vụ đổi | Storage +20–30% so với typed columns; truy vấn phức tạp hơn; không foreign key constraint | Chấp nhận khi độ linh hoạt quan trọng hơn chi phí storage |
+| **Trigger** thay vì application-level logging | Không cần sửa code app; log đảm bảo ngay cả khi app bypass | Overhead mỗi DML (+1 INSERT); khó debug khi trigger lỗi; tăng WAL size | Chấp nhận khi overhead <15% TPS — đạt được ở PoC (−4%) |
+| **Partitioning theo tháng** | Partition pruning; DROP PARTITION O(1); tablespace tách biệt | Cross-partition query chậm hơn; PRIMARY KEY phải bao gồm partition key; tạo partition mới cần cron job | Chấp nhận khi query thường kèm điều kiện thời gian |
+| **Synchronous logging** thay vì async/queue | Atomicity: log commit cùng transaction nghiệp vụ; không mất log khi crash | Không giảm được latency trigger; không phù hợp >10k TPS | Bắt buộc với yêu cầu audit trail tài chính/pháp lý |
+| **Hash chain SHA-256** | Tamper-evident: phát hiện sửa tầng file; không thể phủ nhận | +1 SELECT prev_hash mỗi INSERT; race condition khi concurrent writes | Tắt khi benchmark TPS thuần; bật khi yêu cầu bảo mật cao |
 
 ---
 
@@ -211,17 +264,63 @@ CREATE TABLE audit_logs (
   - `to_jsonb(OLD)` và `to_jsonb(NEW)`.
 
 ### 3.2. Tự động hóa triển khai audit cho nhiều bảng (Dynamic Triggers)
-- Tiêu chí chọn bảng nghiệp vụ cần audit.
-- Script tạo trigger hàng loạt; cơ chế bật/tắt theo schema/bảng.
+
+Hệ thống sử dụng một hàm trigger duy nhất (`func_audit_trigger`) có thể gắn vào bất kỳ bảng nghiệp vụ nào mà không cần viết lại logic:
+
+```sql
+CREATE TRIGGER trg_audit_orders
+AFTER INSERT OR UPDATE OR DELETE ON orders
+FOR EACH ROW EXECUTE FUNCTION func_audit_trigger();
+```
+
+**Tiêu chí chọn bảng cần audit**: bảng chứa dữ liệu nhạy cảm (tài chính, nhân sự, trạng thái giao dịch), bảng có nhiều actor khác nhau thực hiện thay đổi, và bảng thuộc phạm vi tuân thủ pháp lý. Trong PoC này: `orders` (trạng thái giao dịch, giá trị tiền tệ) và `products` (thông tin hàng hóa).
+
+**Cơ chế bật/tắt linh hoạt** (không cần xóa trigger):
+```sql
+-- Tắt khi import hàng loạt (seed data, migration)
+ALTER TABLE orders DISABLE TRIGGER trg_audit_orders;
+
+-- Bật lại sau khi hoàn thành
+ALTER TABLE orders ENABLE  TRIGGER trg_audit_orders;
+```
+
+Toàn bộ logic audit nằm trong function, không phụ thuộc vào mã ứng dụng — thêm bảng mới vào audit chỉ cần thêm một lệnh `CREATE TRIGGER`.
 
 ### 3.3. Tối ưu đường ghi (write path)
-- Giảm overhead: hạn chế thao tác nặng trong trigger; tránh lock không cần thiết.
-- Chiến lược batch/async (nếu có) và lý do chọn/không chọn.
+
+Các quyết định thiết kế nhằm tối thiểu hóa overhead mỗi lần ghi log:
+
+- **AFTER trigger, không phải BEFORE**: Trigger chạy sau khi hàng đã được ghi vào bảng nghiệp vụ, không block transaction chính trong trường hợp lỗi audit tạm thời. Nếu ghi log thất bại, toàn bộ transaction (bao gồm thao tác nghiệp vụ) sẽ rollback — đảm bảo tính nhất quán.
+- **Ghi thẳng vào partition hot**: Dữ liệu log tháng hiện tại luôn ghi vào một partition đơn (ví dụ `audit_logs_2026_05`), tránh phân mảnh write trên nhiều B-tree index đồng thời.
+- **Không giữ lock phụ**: `func_audit_trigger` chỉ thực hiện một `INSERT` duy nhất — không SELECT, không UPDATE, không gọi function ngoài (trừ phiên bản hash chain). Lock chỉ là row-level trên bảng audit, không block bảng nghiệp vụ.
+- **Synchronous logging (không batch/async)**: Log được commit cùng transaction nghiệp vụ, đảm bảo atomicity — nếu giao dịch thành công thì log chắc chắn tồn tại. Giải pháp async (queue, broker) giảm overhead nhưng có cửa sổ mất log khi crash trước khi flush, không phù hợp yêu cầu audit trail trong hệ thống tài chính.
 
 ### 3.4. Quản lý vòng đời dữ liệu (Data Lifecycle)
-- Retention: 6 tháng.
-- Drop partition vs delete truyền thống.
-- Archive ra S3/HDD (mô tả quy trình, tiêu chí kiểm soát).
+
+**Retention policy**: Log được giữ 6 tháng trực tuyến (online) trong các partition cold trên cùng storage. Sau 6 tháng, partition được archive rồi DROP.
+
+**DROP PARTITION vs DELETE truyền thống**:
+
+| Phương pháp | Cơ chế | Thời gian (1M rows) |
+|---|---|---|
+| `DELETE FROM audit_logs WHERE changed_at < ...` | Duyệt từng row, ghi WAL per-row, cập nhật index | ~641 ms |
+| `DROP TABLE audit_logs_YYYY_MM` | Xóa file vật lý + metadata, không WAL per-row | ~47 ms |
+
+DROP PARTITION nhanh hơn ~13,6× và không giữ lock bảng kéo dài, không ảnh hưởng giao dịch đang chạy.
+
+**Archive ra S3/HDD trước khi DROP**:
+```bash
+# 1. Backup partition cần xóa
+pg_dump -t audit_logs_2025_11 audit_poc > audit_logs_2025_11.sql
+
+# 2. Xóa partition để giải phóng dung lượng
+psql -c "DROP TABLE audit_logs_2025_11;"
+
+# 3. Khi cần tra cứu: restore vào môi trường điều tra
+psql audit_poc < audit_logs_2025_11.sql
+```
+
+Tiêu chí kiểm soát archiving: chỉ `db_admin` thực hiện; log thao tác archiving được ghi vào `audit_ddl_logs` (qua event trigger); file dump được lưu trữ ít nhất 3 năm theo yêu cầu pháp lý.
 
 #### 3.4.1. Backup/Restore theo partition (Import/Export)
 - Với cấu trúc partition, có thể **backup từng phần** (partial backup) các partition cũ để phục vụ thanh tra/kiểm toán.
@@ -229,29 +328,88 @@ CREATE TABLE audit_logs (
 - Khi cần truy xuất lại: restore từ file dump vào môi trường điều tra/đối soát.
 
 ### 3.5. Cơ chế truy vấn/trích xuất log phục vụ nghiệp vụ và kiểm toán
-- Query mẫu theo `table_name`/`actor`/time range.
-- Query sâu vào JSONB (ví dụ trường lương thay đổi):
 
+Bảng `audit_logs` được thiết kế để đáp ứng nhiều loại truy vấn kiểm toán khác nhau mà không cần công cụ bên ngoài:
+
+**Truy vấn theo bảng và thời gian** (B-tree index, partition pruning):
 ```sql
-SELECT *
+-- 50 thay đổi gần nhất trên bảng orders trong tháng 3/2026
+SELECT operation, user_name, old_data->>'status' AS old_status,
+       new_data->>'status' AS new_status, changed_at
 FROM audit_logs
-WHERE table_name = 'nhan_vien'
-  AND (new_data->>'luong')::int > 50000000;
+WHERE table_name = 'public.orders'
+  AND changed_at >= '2026-03-01' AND changed_at < '2026-04-01'
+ORDER BY changed_at DESC LIMIT 50;
 ```
 
-- (Tùy chọn) Stored procedure/function trả về report theo yêu cầu kiểm toán.
+**Truy vấn sâu vào JSONB** (GIN index, toán tử `@>`):
+```sql
+-- Tất cả đơn hàng chuyển sang trạng thái PAID
+SELECT id, user_name, old_data->>'status' AS old_status, changed_at
+FROM audit_logs
+WHERE table_name = 'public.orders'
+  AND new_data @> '{"status": "PAID"}';
+
+-- Sản phẩm laptop Core i9 bị sửa thông số
+SELECT * FROM audit_logs
+WHERE table_name = 'public.products'
+  AND new_data->'tech_specs'->>'cpu' = 'Core i9';
+```
+
+**Truy vết actor** — ai thực hiện nhiều thay đổi nhất trong ngày:
+```sql
+SELECT user_name, operation, count(*) AS cnt
+FROM audit_logs
+WHERE changed_at::date = current_date
+GROUP BY user_name, operation
+ORDER BY cnt DESC;
+```
+
+**Kiểm tra tính toàn vẹn hash chain**:
+```sql
+SELECT chain_ok, count(*) FROM func_verify_hash_chain('public.orders')
+GROUP BY chain_ok;
+-- chain_ok = true: hợp lệ; false: có dòng bị sửa trực tiếp tầng file
+```
 
 ---
 
 ## CHƯƠNG 4. AN TOÀN, BẢO MẬT VÀ CHỐNG CAN THIỆP LOG
 ### 4.1. Phân quyền và mô hình SECURITY DEFINER
-- Vai trò: `app_user`, `auditor`, `db_admin`.
-- Nguyên tắc: `app_user` ghi được log thông qua trigger nhưng không SELECT trực tiếp bảng log.
+
+Hệ thống định nghĩa ba vai trò với phân quyền tách biệt rõ ràng:
+
+| Vai trò | Quyền trên bảng nghiệp vụ | Quyền trên `audit_logs` | Quyền trên `security_alerts` |
+|---|---|---|---|
+| `app_user` | SELECT, INSERT, UPDATE, DELETE | **Không có** | **Không có** |
+| `auditor` | **Không có** | SELECT | SELECT |
+| `db_admin` | ALL | ALL (owner) | ALL (owner) |
+
+**SECURITY DEFINER — cơ chế ủy quyền**: `func_audit_trigger()` được khai báo với `SECURITY DEFINER` và owner là `db_admin`. Khi `app_user` thực hiện UPDATE trên `orders`, trigger gọi function này và function chạy dưới quyền `db_admin` — đủ quyền INSERT vào `audit_logs`. `app_user` không bao giờ có quyền trực tiếp trên bảng audit.
+
+**Phân biệt `session_user` và `current_user`**: Trong SECURITY DEFINER context, `current_user` trả về `db_admin` (owner function). Hàm dùng `session_user` — luôn trả về người dùng đang kết nối (`app_user`) — để ghi đúng identity caller vào cột `user_name`.
+
+**Hardening**: `SET search_path = public, pg_temp` được gắn vào mọi SECURITY DEFINER function để chống schema hijack (kẻ tấn công tạo object trùng tên trong schema có độ ưu tiên cao hơn).
 
 ### 4.2. Immutability (Append-only/WORM) cho bảng audit
-- Mục tiêu: bảo vệ log theo hướng **Write-Once-Read-Many (WORM)**.
-- Trigger `BEFORE UPDATE OR DELETE` trên `audit_logs` → `RAISE EXCEPTION`.
-- Phân tích các trường hợp ngoại lệ (bảo trì/khôi phục) và kiểm soát.
+
+**Mục tiêu**: Biến `audit_logs` thành bảng Write-Once-Read-Many (WORM) — một khi row được ghi, không ai — kể cả `db_admin` — có thể sửa hay xóa nó theo cách thông thường.
+
+**Cơ chế**: Trigger `BEFORE UPDATE OR DELETE` trên `audit_logs` gọi `func_prevent_audit_change()`. Function này:
+1. Thu thập thông tin về thao tác cố tình (operation, table, user, old/new values).
+2. Ghi cảnh báo vào `security_alerts` qua `dblink` autonomous transaction — đảm bảo alert được commit ngay cả khi transaction bị rollback.
+3. `RAISE EXCEPTION` — hủy thao tác và thông báo lỗi rõ ràng cho caller.
+
+**Phân tích trường hợp ngoại lệ hợp lệ**:
+
+| Tình huống | Cơ chế | Có đi qua trigger không? |
+|---|---|---|
+| Xóa log theo retention | `DROP TABLE audit_logs_YYYY_MM` | **Không** — DDL-level |
+| Backup & restore partition | `pg_dump / psql restore` | **Không** — filesystem/DDL |
+| Sửa lỗi schema (ADD COLUMN) | DDL trên bảng cha | **Không** — không động đến rows |
+| Sửa trực tiếp file dữ liệu (bypass DB) | Filesystem-level | **Không** — cần hash chain để phát hiện |
+
+Trong PoC này không có "emergency bypass" cho phép sửa log row theo cách thông thường. Mọi can thiệp hợp lệ đều thông qua DDL cấp partition — không đi qua row-level trigger.
 
 ### 4.3. Tamper-evident logging (chuỗi băm)
 - Công thức: `hash_n = sha256(prev_hash || canonical(log_n))`, trong đó `canonical(log_n)` là chuỗi nối tiêu chuẩn của các trường nghiệp vụ (`table_name|operation|user_name|old_data|new_data|changed_at`).
@@ -259,9 +417,75 @@ WHERE table_name = 'nhan_vien'
 - Quy trình kiểm tra (verifier): duyệt log theo thứ tự `(changed_at, id)`, tính lại hash và so khớp với `hash` đã lưu; gãy chuỗi ⇒ phát cảnh báo `HASH_CHAIN_BROKEN` vào `security_alerts`.
 - Đánh đổi: thêm 1 SELECT `prev_hash` mỗi lần insert ⇒ tăng latency; có thể tắt khi benchmark thuần TPS.
 
-### 4.4. Cảnh báo và giám sát (Alerting/Monitoring)
-- Bảng `security_alerts` hoặc integration SIEM.
-- Sự kiện cảnh báo: cố xóa/sửa audit; truy cập trái phép; sai lệch hash chain.
+### 4.4. Chiến lược tối ưu hóa truy vấn (Query Optimization)
+
+Bảng `audit_logs` partitioned JSONB có đặc thù khác biệt so với bảng quan hệ thông thường — chiến lược tối ưu cần kết hợp cả partition pruning lẫn JSONB index:
+
+**Nguyên tắc 1 — Luôn kèm điều kiện thời gian (`changed_at`)**:
+```sql
+-- ĐÚNG: planner prune được (chỉ scan 1 partition)
+WHERE changed_at >= '2026-03-01' AND changed_at < '2026-04-01'
+
+-- SAI: function wrap ngăn partition pruning
+WHERE date_trunc('month', changed_at) = '2026-03-01'
+```
+
+**Nguyên tắc 2 — Dùng toán tử containment `@>` cho GIN**:
+```sql
+-- Tận dụng GIN index (idx_audit_new_data_gin)
+WHERE new_data @> '{"status": "PAID"}'
+
+-- KHÔNG dùng GIN (chỉ dùng seq scan)
+WHERE new_data->>'status' = 'PAID'
+```
+
+**Nguyên tắc 3 — GIN hiệu quả nhất khi selectivity cao**:
+- GIN vượt trội khi tìm giá trị hiếm: transaction ID cụ thể, user_id cụ thể, trạng thái hiếm.
+- Khi ~33% rows match (như `status=PAID` với phân bố đều), planner có thể chọn Seq Scan — đây là hành vi đúng theo cost model PostgreSQL.
+
+**Nguyên tắc 4 — `work_mem` cho bitmap operation**:
+```sql
+-- Tăng work_mem session-level trước truy vấn phân tích lớn
+SET work_mem = '128MB';
+SELECT count(*) FROM audit_logs WHERE new_data @> '{"status":"PAID"}';
+```
+GIN Bitmap Index Scan cần đủ `work_mem` để xây dựng bitmap trước khi recheck — thiếu memory planner fallback sang Seq Scan.
+
+**Tóm tắt index strategy**:
+
+| Index | Dùng cho | Loại |
+|---|---|---|
+| `(changed_at)` | Range scan theo thời gian | B-tree |
+| `(table_name, changed_at)` | Lịch sử 1 bảng trong khoảng thời gian | B-tree |
+| `(user_name, changed_at)` | Truy vết actor | B-tree |
+| `GIN(new_data)` | Tìm theo key/value trong JSONB | GIN |
+
+### 4.5. Cảnh báo và giám sát (Alerting/Monitoring)
+
+Hệ thống triển khai hai kênh cảnh báo:
+
+**Kênh 1 — Bảng `security_alerts`** (tích hợp sẵn): Ghi nhận tự động qua `dblink` autonomous transaction khi `func_prevent_audit_change()` bị kích hoạt. Schema:
+```sql
+CREATE TABLE security_alerts (
+    id         BIGSERIAL PRIMARY KEY,
+    alert_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    action     TEXT NOT NULL,          -- loại sự kiện
+    table_name TEXT,
+    user_name  TEXT,
+    details    JSONB                   -- old/new values, schema context
+);
+```
+Việc dùng `dblink` để ghi alert đảm bảo: dù transaction can thiệp bị rollback, alert vẫn được commit vĩnh viễn — không mất vết.
+
+**Kênh 2 — Tích hợp SIEM** (hướng mở rộng): Bảng `security_alerts` có thể được poll định kỳ bởi SIEM (Splunk, ELK Stack, Wazuh) qua Logical Replication hoặc foreign data wrapper. Cột `details JSONB` lưu đầy đủ context để phân tích forensic mà không cần query lại bảng nghiệp vụ.
+
+**Danh sách sự kiện cảnh báo**:
+
+| Sự kiện | Trigger | Ghi chú |
+|---|---|---|
+| `AUDIT_TAMPER_ATTEMPT` | `func_prevent_audit_change` | Cố UPDATE/DELETE row trong `audit_logs` |
+| `HASH_CHAIN_BROKEN` | `func_verify_hash_chain()` (manual) | Phát hiện sửa trực tiếp file dữ liệu |
+| DDL changes | `audit_ddl_trigger` (09_audit_ddl.sql) | Ghi vào `audit_ddl_logs` thay vì security_alerts |
 
 ---
 
@@ -578,5 +802,3 @@ GROUP BY chain_ok;
 SELECT alert_at, action, user_name, details FROM security_alerts
 ORDER BY alert_at DESC;
 ```
-- Phụ lục C: Script pgbench và cách chạy benchmark
-- Phụ lục D: Truy vấn mẫu phục vụ kiểm toán/báo cáo
