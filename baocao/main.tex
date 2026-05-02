@@ -1,0 +1,91 @@
+% Define metadata
+\documentclass{template/thesis}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{float}
+% --- Tinh chỉnh khoảng cách ---
+% Khoảng cách giữa hình và văn bản
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+% Khoảng cách giữa 2 hình liên tiếp
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\Title{Tìm hiểu các thuật toán tổng hợp trọng số trong Federated Learning}
+\Title[en]{A Study on Weight Aggregation Algorithms in Federated Learning}
+
+\ThesisType{BÁO CÁO ĐỒ ÁN}
+
+\University{ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}
+\CollegeOrDept{{TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN}}
+\Faculty{KHOA KHOA HỌC VÀ KỸ THUẬT THÔNG TIN}
+
+
+\Author{PHẠM QUỐC CƯỜNG}{250201004}
+\Author{LÊ QUANG MINH}{250201016}
+\Author{NGUYỄN ĐĂNG PHÚC LỢI}{250202012}
+
+\Degree{MÔN: AN TOÀN BẢO MẬT HỆ THỐNG THÔNG TIN}
+% \MajorCode{123}
+\ThesisYear{2025}
+\ThesisLocation{TP. HỒ CHÍ MINH}
+
+\Supervisor{PGS TS. Nguyễn Tấn Cầm}
+
+\hypersetup{
+	pdfencoding=auto,
+	pdfauthor={Tên tác giả},
+	pdfsubject={Chủ đề đề tài},
+	pdftitle={Tên tiêu đề đề tài},
+	pdfkeywords={}
+}
+
+\begin{document}
+\firstbeforepreface
+\secondbeforepreface
+\setcounter{page}{1}
+\newpage
+\afterpreface
+
+% Thông tin thành viên nhóm
+\input{chapters/team_info}
+\clearpage
+
+\chapter{Mở đầu}
+\label{c:intro}
+\input{chapters/1-MoDau}
+
+\chapter{Cơ sở lý thuyết}
+\label{c:cosolythuyet}
+\input{chapters/2-CoSoLyThuyet}
+
+\chapter{Phương pháp đề xuất: FedSecL}
+\label{ch:fedcil}
+\input{chapters/PPDeXuat}
+
+\chapter{Phương pháp thực hiện}
+\label{c:phuongphapthuchien}
+\input{chapters/3-PhuongPhapThucHien}
+
+\chapter{Thực nghiệm, đánh giá và thảo luận}
+\label{c:thucnghiemdanhgia}
+\input{chapters/4-ThucNghiemDanhGia}
+
+
+\chapter{Kết luận và hướng phát triển}
+\label{c:ketluanvaphattrien}
+\input{chapters/5-KetLuanPhatTrien}
+
+
+% \appendix
+% \renewcommand{\cftchappresnum}{Phụ lục }
+% \addtocontents{toc}{\protect\renewcommand{\protect\cftchappresnum}{Phụ lục }}
+% \input{chapters/appendix}
+
+\begingroup
+\setlength{\emergencystretch}{8em}
+\justifying\printbibliography[title=Tài liệu tham khảo]
+\endgroup
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+
+
+
+\end{document}

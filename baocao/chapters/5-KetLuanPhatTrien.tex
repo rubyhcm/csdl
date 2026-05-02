@@ -1,0 +1,202 @@
+Chương này tổng kết những kết quả chính mà đề tài đã đạt được, đồng thời chỉ ra những hạn chế còn tồn tại và đề xuất các hướng phát triển tiềm năng cho nghiên cứu trong tương lai về Federated Learning.
+
+\section{Kết luận}
+
+Sau khi thực hiện đề tài với tên ``\textbf{Tìm hiểu các thuật toán tổng hợp trọng số trong Federated Learning}'', nhóm đã hoàn thành các mục tiêu đề ra và đạt được những kết quả quan trọng sau:
+
+\subsection{Kết quả đạt được}
+
+\begin{enumerate}
+    \item \textbf{Nghiên cứu toàn diện về Federated Learning:}
+    \begin{itemize}
+        \item Đã tìm hiểu sâu về kiến trúc và cơ chế hoạt động của Federated Learning.
+        \item Phân tích chi tiết thuật toán nền tảng FedAvg và các vấn đề của nó khi đối mặt với dữ liệu Non-IID.
+        \item Hiểu rõ các thách thức trong môi trường học phân tán: client drift, communication cost, privacy concerns.
+    \end{itemize}
+    
+    \item \textbf{Phân tích chuyên sâu các thuật toán tổng hợp trọng số:}
+    \begin{itemize}
+        \item \textbf{FedAvg (2016):} Thuật toán nền tảng sử dụng trung bình trọng số dựa trên kích thước dữ liệu, đơn giản nhưng hiệu suất giảm mạnh với dữ liệu Non-IID (MNIST: 94.32\%, CIFAR-10: 61.04\%).
+        \item \textbf{FedProto (2022):} Truyền tải prototype thay vì tham số mô hình, đạt kết quả tốt nhất với MNIST Non-IID (97.13\%), tiết kiệm băng thông và hỗ trợ heterogeneous models.
+        \item \textbf{FedLWS (2025):} Phương pháp co trọng số theo từng lớp mạng (layer-wise weight shrinking), hiệu quả với cả IID và Non-IID: MNIST: 96.0\% (Non-IID), 98.0\% (IID); CIFAR-10: 64.08\% (Non-IID), 76.85\% (IID).
+        \item \textbf{FedAWA (2025):} Sử dụng client vector để tối ưu hóa trọng số thích ứng, đạt accuracy cao nhất với IID (MNIST: 98.50\%, CIFAR-10: 80.10\%) và rất tốt với Non-IID (MNIST: 96.50\%, CIFAR-10: 63.55\%).
+        \item \textbf{FedNolowe (2025):} Chuẩn hóa loss hai giai đoạn, hiệu quả đặc biệt với dữ liệu phức tạp: dẫn đầu trên CIFAR-10 Non-IID (64.50\%) nhưng thấp trên MNIST (91.54\%).
+    \end{itemize}
+    
+
+    \item \textbf{So sánh toàn diện và đưa ra khuyến nghị:}
+    \begin{itemize}
+        \item Xây dựng bảng so sánh chi tiết về accuracy, tốc độ hội tụ, chi phí tính toán và băng thông.
+        \item Đề xuất khuyến nghị lựa chọn thuật toán phù hợp cho từng ngữ cảnh ứng dụng cụ thể.
+        \item Chỉ ra rằng không có thuật toán "tốt nhất tuyệt đối", mà cần cân nhắc trade-off giữa accuracy, speed và cost.
+    \end{itemize}
+    
+    \item \textbf{Đóng góp về mặt học thuật:}
+    \begin{itemize}
+        \item Tổng hợp và phân tích các công trình nghiên cứu mới nhất (2022-2025) trong lĩnh vực Federated Learning.
+        \item Cung cấp cái nhìn tổng quan về xu hướng phát triển từ các phương pháp tổng hợp đơn giản đến các kỹ thuật thích ứng phức tạp.
+        \item Làm rõ mối liên hệ giữa các thuật toán và điều kiện áp dụng của chúng.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Ý nghĩa của đề tài}
+
+Kết quả nghiên cứu của đề tài có ý nghĩa quan trọng trong cả lý thuyết và thực tiễn:
+
+\begin{itemize}
+    \item \textbf{Về mặt lý thuyết:}
+    \begin{itemize}
+        \item Làm rõ cơ sở toán học và trực giác đằng sau các thuật toán tổng hợp trọng số.
+        \item Phân tích sâu về tác động của dữ liệu Non-IID đến quá trình hội tụ.
+        \item Đề xuất framework đánh giá và so sánh các thuật toán FL.
+    \end{itemize}
+    
+    \item \textbf{Về mặt thực tiễn:}
+    \begin{itemize}
+        \item Cung cấp hướng dẫn lựa chọn thuật toán phù hợp cho các ứng dụng thực tế.
+        \item Giúp các nhà phát triển hiểu rõ trade-off giữa accuracy, tốc độ và chi phí.
+        \item Mở ra hướng áp dụng FL trong các lĩnh vực nhạy cảm về privacy: y tế, tài chính, IoT.
+    \end{itemize}
+\end{itemize}
+
+\section{Hạn chế}
+
+Trong quá trình thực hiện đề tài, nhóm đã gặp một số khó khăn và hạn chế sau:
+
+\begin{enumerate}
+    \item \textbf{Hạn chế về phương pháp nghiên cứu:}
+    \begin{itemize}
+        \item Chưa có cơ hội triển khai các thuật toán trong môi trường thực tế với nhiều thiết bị phân tán.
+        \item Thiếu dữ liệu thực tế từ các ứng dụng cụ thể để đánh giá hiệu quả trong điều kiện thực tế.
+    \end{itemize}
+    
+    \item \textbf{Hạn chế về phạm vi nghiên cứu:}
+    \begin{itemize}
+        \item Chỉ tập trung vào các bộ dữ liệu nhỏ và trung bình (MNIST, CIFAR-10).
+        \item Chưa đánh giá trên các bài toán phức tạp hơn như NLP, speech recognition, hoặc recommendation systems.
+        \item Chưa xem xét các yếu tố bảo mật nâng cao như differential privacy, secure aggregation.
+    \end{itemize}
+    
+    \item \textbf{Hạn chế về tài nguyên:}
+    \begin{itemize}
+        \item Thiếu tài nguyên phần cứng (GPU cluster) để chạy thí nghiệm quy mô lớn.
+        \item Thời gian nghiên cứu hạn chế nên chưa thể đi sâu vào tất cả các biến thể của từng thuật toán.
+        \item Chưa có môi trường mô phỏng FL với nhiều client thực sự (distributed system).
+    \end{itemize}
+    
+    \item \textbf{Hạn chế về độ sâu phân tích:}
+    \begin{itemize}
+        \item Chưa phân tích chi tiết về convergence theory và proof of convergence cho từng thuật toán.
+        \item Chưa nghiên cứu sâu về các kỹ thuật tối ưu hóa hyperparameter cho từng thuật toán.
+        \item Chưa xem xét các yếu tố như network latency, device heterogeneity trong thực tế.
+    \end{itemize}
+\end{enumerate}
+
+\section{Hướng phát triển}
+
+Dựa trên kết quả đạt được và những hạn chế còn tồn tại, nhóm đề xuất các hướng phát triển tiềm năng cho nghiên cứu trong tương lai:
+
+\subsection{Hướng nghiên cứu ngắn hạn}
+
+\begin{enumerate}
+    \item \textbf{Triển khai thực nghiệm:}
+    \begin{itemize}
+        \item Xây dựng môi trường mô phỏng FL với ít nhất 50-100 clients.
+        \item Implement các thuật toán FedLWS, FedAWA, FedNolowe từ đầu.
+        \item Chạy thí nghiệm trên các bộ dữ liệu lớn hơn (ImageNet, COCO) để kiểm chứng scalability.
+        \item So sánh thời gian thực thi và resource usage trong môi trường thực tế.
+    \end{itemize}
+    
+    \item \textbf{Mở rộng phạm vi đánh giá:}
+    \begin{itemize}
+        \item Đánh giá trên các bài toán NLP (sentiment analysis, language modeling) với BERT, GPT.
+        \item Thử nghiệm trên các dataset y tế (medical imaging, EHR) để đánh giá tính ứng dụng thực tế.
+        \item Nghiên cứu hiệu quả trên các bài toán time-series (IoT sensor data, financial data).
+    \end{itemize}
+    
+    \item \textbf{Tối ưu hóa hyperparameter:}
+    \begin{itemize}
+        \item Nghiên cứu ảnh hưởng của learning rate, local epochs, batch size đến hiệu suất.
+        \item Áp dụng các kỹ thuật auto-tuning (Bayesian Optimization, Grid Search) để tìm cấu hình tối ưu.
+        \item Phân tích sensitivity của từng thuật toán đối với các hyperparameter.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Hướng nghiên cứu dài hạn}
+
+\begin{enumerate}
+    \item \textbf{Kết hợp các thuật toán (Hybrid Approaches):}
+    \begin{itemize}
+        \item Nghiên cứu kết hợp FedLWS với FedAWA để tận dụng ưu điểm của cả hai.
+        \item Đề xuất thuật toán adaptive tự động chuyển đổi giữa các phương pháp tổng hợp dựa trên điều kiện dữ liệu.
+        \item Phát triển meta-learning approach để học cách chọn thuật toán tối ưu cho từng round.
+    \end{itemize}
+    
+    \item \textbf{Tăng cường bảo mật và privacy:}
+    \begin{itemize}
+        \item Tích hợp Differential Privacy vào các thuật toán tổng hợp để đảm bảo privacy guarantee.
+        \item Nghiên cứu Secure Multi-Party Computation (SMPC) để bảo vệ dữ liệu trong quá trình aggregation.
+        \item Phát triển các phương pháp phát hiện và chống lại Byzantine attacks, poisoning attacks.
+    \end{itemize}
+    
+
+    \item \textbf{Tối ưu hóa communication efficiency:}
+    \begin{itemize}
+        \item Nghiên cứu các kỹ thuật nén gradient (gradient compression, sparsification).
+        \item Phát triển phương pháp quantization để giảm kích thước model updates.
+        \item Áp dụng knowledge distillation để truyền tải kiến thức thay vì tham số đầy đủ.
+    \end{itemize}
+    
+    \item \textbf{Personalized Federated Learning:}
+    \begin{itemize}
+        \item Nghiên cứu các phương pháp tạo personalized model cho từng client trong khi vẫn học global knowledge.
+        \item Phát triển clustering-based FL để nhóm các client có phân phối dữ liệu tương tự.
+        \item Kết hợp transfer learning với FL để cải thiện hiệu suất trên từng client.
+    \end{itemize}
+    
+    \item \textbf{Ứng dụng thực tế:}
+    \begin{itemize}
+        \item Triển khai FL cho ứng dụng y tế: phân tích X-ray, CT scan từ nhiều bệnh viện mà không chia sẻ dữ liệu bệnh nhân.
+        \item Áp dụng FL trong IoT: học từ dữ liệu sensor của smart home, smart city.
+        \item Phát triển FL cho keyboard prediction, next-word suggestion trên mobile devices.
+        \item Nghiên cứu FL cho autonomous vehicles: học từ kinh nghiệm lái xe của nhiều xe mà không chia sẻ dữ liệu nhạy cảm.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Hướng nghiên cứu }
+
+\begin{enumerate}
+    \item \textbf{Federated Learning với Foundation Models:}
+    \begin{itemize}
+        \item Nghiên cứu cách fine-tune các Large Language Models (GPT, LLaMA) trong môi trường FL.
+        \item Phát triển phương pháp efficient fine-tuning (LoRA, Adapter) cho FL.
+        \item Giải quyết vấn đề heterogeneity khi các client có tài nguyên khác nhau.
+    \end{itemize}
+    
+    \item \textbf{Cross-Silo và Cross-Device FL:}
+    \begin{itemize}
+        \item Nghiên cứu FL trong môi trường cross-silo (giữa các tổ chức, công ty).
+        \item Phát triển FL cho cross-device (hàng triệu mobile devices).
+        \item Giải quyết vấn đề stragglers (clients chậm) và dropout (clients rời khỏi hệ thống).
+    \end{itemize}
+    
+    \item \textbf{Federated Reinforcement Learning:}
+    \begin{itemize}
+        \item Kết hợp FL với Reinforcement Learning để học policy từ nhiều agents.
+        \item Ứng dụng trong robotics, game AI, recommendation systems.
+    \end{itemize}
+\end{enumerate}
+
+\section{Lời kết}
+
+Federated Learning đang mở ra một kỷ nguyên mới cho Machine Learning, nơi mà việc bảo vệ quyền riêng tư không còn là rào cản cho sự phát triển của AI. Các thuật toán tổng hợp trọng số tiên tiến như FedLWS, FedAWA, FedNolowe đã chứng minh rằng chúng ta có thể đạt được hiệu suất cao ngay cả khi dữ liệu phân tán và không đồng nhất.
+
+Đề tài này đã cung cấp một cái nhìn toàn diện về các phương pháp tổng hợp trọng số trong Federated Learning. Mặc dù còn nhiều thách thức cần giải quyết, nhưng tiềm năng ứng dụng của FL trong y tế, tài chính, IoT và nhiều lĩnh vực khác là vô cùng lớn.
+
+Nhóm hy vọng rằng nghiên cứu này sẽ là nền tảng hữu ích cho những ai quan tâm đến Federated Learning, và góp phần nhỏ bé vào sự phát triển của lĩnh vực này tại Việt Nam.
+
+\vspace{1cm}
+
+\begin{flushright}
+\textit{Thành phố Hồ Chí Minh, tháng 12 năm 2025}
+\end{flushright}

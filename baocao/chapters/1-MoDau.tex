@@ -1,0 +1,80 @@
+\section{Lý do chọn đề tài}
+Trong kỷ nguyên của cuộc Cách mạng Công nghiệp 4.0, Trí tuệ nhân tạo \ac{ai} và Học máy \ac{ml} đã trở thành những công cụ không thể thiếu, thúc đẩy sự phát triển vượt bậc trong các lĩnh vực như y tế thông minh, tài chính số và xe tự lái, ... Tuy nhiên, các mô hình học máy truyền thống thường dựa trên kiến trúc tập trung, đòi hỏi dữ liệu từ nhiều nguồn phải được thu thập và lưu trữ tại một máy chủ duy nhất để huấn luyện. Cách tiếp cận này đang đối mặt với "rào cản dữ liệu" cực kỳ lớn khi các quy định về quyền riêng tư ngày càng siết chặt. Sự ra đời của các khung pháp lý như Quy định bảo vệ dữ liệu chung (GDPR) của Liên minh Châu Âu \cite{Voigt2017} hay Đạo luật quyền riêng tư của người tiêu dùng California (CCPA) đã khiến việc chia sẻ dữ liệu thô trở thành một rủi ro pháp lý và đạo đức nghiêm trọng \cite{Zhang2021Survey}.
+
+Federated Learning \ac{fl} (Học tập liên hợp) xuất hiện như một lời giải cho bài toán "ốc đảo dữ liệu" (Data Silos), cho phép các thiết bị biên cộng tác huấn luyện mô hình mà không cần truyền tải dữ liệu gốc \cite{McMahan2017}. Mặc dù \ac{fl} mang lại lợi thế vượt trội về bảo mật, việc triển khai nó trong môi trường thực tế vấp phải thách thức cốt lõi là sự không đồng nhất về dữ liệu (Non-IID).[1][2] Trong kịch bản này, dữ liệu giữa các người dùng thường bị lệch về phân phối nhãn (Label Skew) hoặc đặc trưng (Feature Skew), gây ra hiện tượng "trôi dạt trọng số" (Weight Drift) \cite{Zhao2018}. Các thuật toán cơ bản như FedAvg thường mất đi tính ổn định và khó hội tụ khi đối mặt với sự phân hóa dữ liệu cực đoan này \cite{Li2020}.
+
+Trước những hạn chế đó, giai đoạn 2022-2025 chứng kiến sự bùng nổ của các chiến lược tổng hợp trọng số tiên tiến nhằm tối ưu hóa hiệu năng và tính bền vững của hệ thống. Các nghiên cứu đột phá như FedLWS \cite{Shi2025LWS} đã đề xuất cơ chế co trọng số theo từng lớp để xử lý sự khác biệt về độ sâu mạng nơ-ron, trong khi FedAWA \cite{Shi2025AWA} sử dụng các vector client để điều chỉnh trọng số thích ứng, giúp mô hình bám sát hướng tối ưu toàn cầu. Bên cạnh đó, các phương pháp như FedNolowe \cite{Le2025} tập trung vào việc chuẩn hóa hàm loss để giảm thiểu tác động của các client có dữ liệu nhiễu, và FedProto \cite{Tan2022} thay thế việc truyền tải tham số bằng các đại diện lớp (prototypes) để vượt qua rào cản về kiến trúc mô hình không đồng nhất.
+
+Tuy nhiên, dù có nhiều cải tiến, việc lựa chọn thuật toán nào phù hợp cho từng ngữ cảnh cụ thể — giữa sự đánh đổi về độ chính xác, chi phí truyền thông và khả năng chống lại các cuộc tấn công đầu độc mô hình \cite{Fang2020} — vẫn là một câu hỏi mở. Đặc biệt, sự thiếu hụt các nghiên cứu đối chứng toàn diện giữa các thuật toán SOTA (State-of-the-art) mới nhất khiến các nhà phát triển gặp khó khăn trong việc triển khai thực tế. Đồng thời, nhu cầu về một phương pháp vừa đảm bảo hiệu năng trong môi trường Non-IID, vừa tăng cường tính an toàn (Security) là vô cùng cấp thiết.
+
+Xuất phát từ những bối cảnh trên, đề tài "Tìm hiểu các thuật toán tổng hợp trọng số trong Federated Learning" được thực hiện nhằm phân tích sâu sắc cơ chế toán học, so sánh hiệu năng thực nghiệm và đánh giá tính khả thi của các thuật toán hàng đầu hiện nay. Đề tài không chỉ dừng lại ở việc khảo sát mà còn hướng tới việc đề xuất giải pháp FedSecL, nhằm thu hẹp khoảng cách giữa hiệu năng huấn luyện và tính an toàn dữ liệu trong các hệ thống \ac{fl} thế hệ mới.
+
+\section{Các nghiên cứu liên quan}
+Các nghiên cứu trong lĩnh vực \ac{fl} đã trải qua nhiều giai đoạn phát triển để giải quyết các vấn đề về phân phối dữ liệu và tính thích nghi:
+
+\begin{itemize}
+  \item \textbf{FedAvg:} Thuật toán cơ bản nhất sử dụng trung bình trọng số dựa trên kích thước dữ liệu\cite{McMahan2017}. Tuy nhiên, hiệu suất giảm mạnh khi dữ liệu Non-IID.
+  \item \textbf{FedLWS:} Đề xuất phương pháp co trọng số theo từng lớp (layer-wise weight shrinking) để tối ưu hóa quá trình tổng hợp mà không cần dữ liệu proxy\cite{Shi2025LWS}.
+  \item \textbf{FedAWA:} Sử dụng "client vector" để điều chỉnh trọng số thích ứng, gán trọng số cao hơn cho các cập nhật phù hợp với hướng tối ưu toàn cầu\cite{Shi2025AWA}.
+  \item \textbf{FedNolowe:} Sử dụng giá trị loss đã được chuẩn hóa hai giai đoạn để tính toán trọng số, giúp mô hình ổn định hơn trước dữ liệu nhiễu\cite{Le2025}.
+  \item \textbf{FedProto:} Truyền tải các prototype (đại diện lớp) thay vì tham số mô hình, giúp giải quyết vấn đề không đồng nhất về kiến trúc mô hình\cite{Tan2022}.
+
+\end{itemize}
+
+\section{Mục tiêu, đối tượng và phạm vi nghiên cứu}
+
+\subsection{Mục tiêu nghiên cứu}
+\label{sec:MucTieu}
+Mục tiêu của đề tài là tìm hiểu, phân tích và so sánh hiệu quả của các chiến lược học tập tiên tiến trong \ac{fl}. Cụ thể:
+\begin{itemize}
+    \item Phân tích cơ chế toán học của các thuật toán tổng hợp trọng số tiên tiến: FedAvg, FedLWS, FedAWA, FedNolowe, FedProto.
+    \item So sánh hiệu suất của các thuật toán trên dữ liệu IID và Non-IID.
+    \item Đánh giá khả năng hội tụ, độ chính xác và chi phí tính toán của từng thuật toán.
+\end{itemize}
+
+\subsection{Đối tượng nghiên cứu}
+\label{sec:DoiTuong}
+Đối tượng nghiên cứu bao gồm:
+\begin{itemize}
+    \item Các thuật toán tổng hợp mô hình (Aggregation Algorithms): FedAvg, FedLWS, FedAWA, FedNolowe, và FedProto.
+    \item Các mô hình mạng nơ-ron tích chập (CNN, ResNet) trong bài toán phân loại ảnh.
+\end{itemize}
+
+\subsection{Phạm vi nghiên cứu}
+\label{sec:PhamVi}
+Đề tài thực hiện khảo sát và đánh giá trong phạm vi:
+\begin{itemize}
+    \item Dữ liệu: MNIST và CIFAR-10 với thiết lập phân phối IID và Non-IID.
+    \item Môi trường: Giả lập hệ thống \ac{fl} với nhiều client tham gia huấn luyện đồng thời.
+\end{itemize}
+
+\section{Phương pháp nghiên cứu}
+\label{sec:PhuongPhap}
+Đề tài áp dụng các phương pháp nghiên cứu sau:
+\begin{enumerate}
+    \item \textbf{Nghiên cứu tài liệu:} Tổng hợp và phân tích các bài báo khoa học (SOTA) từ năm 2022 đến 2025 về các thuật toán tổng hợp trọng số trong \ac{fl}.
+    \item \textbf{Phân tích so sánh:} Đối chiếu các đặc điểm kỹ thuật như độ phức tạp tính toán, thời gian huấn luyện và hiệu suất trên dữ liệu Non-IID.
+    \item \textbf{Tổng hợp kết quả:} Dựa trên kết quả thực nghiệm từ các công bố gốc để so sánh hiệu năng (Accuracy, Convergence Speed) giữa các phương pháp.
+\end{enumerate}
+
+\section{Các đóng góp chính của đề tài}
+\label{sec:DongGop}
+Báo cáo này mang lại các đóng góp chính:
+\begin{itemize}
+    \item Cung cấp cái nhìn toàn diện về các kỹ thuật tổng hợp trọng số tiên tiến (2022-2025) như FedLWS, FedAWA, FedNolowe và FedProto.
+    \item Phân tích chi tiết hiệu suất của các thuật toán trên dữ liệu IID và Non-IID thông qua các thí nghiệm trên bộ dữ liệu MNIST và CIFAR-10.
+    \item Đề xuất một phương pháp để giải quyết "khoảng trống" của các phương pháp đã có.
+    \item Đề xuất bảng so sánh tổng hợp về accuracy, thời gian huấn luyện và độ phức tạp giúp lựa chọn thuật toán phù hợp cho từng ngữ cảnh triển khai.
+\end{itemize}
+
+\section{Cấu trúc Báo cáo đề tài}
+\label{sec:CauTruc}
+Báo cáo với tên đề tài ``Tìm hiểu các thuật toán tổng hợp trọng số trong Federated Learning'' được trình bày bao gồm 5 chương:
+\begin{itemize}
+    \item \textbf{Chương 1: Mở đầu.} Giới thiệu tổng quan về bối cảnh, lý do chọn đề tài và mục tiêu nghiên cứu.
+    \item \textbf{Chương 2: Cơ sở lý thuyết.} Trình bày các kiến thức nền tảng về \ac{fl} và phân tích chi tiết 5 thuật toán: FedAvg, FedLWS, FedAWA, FedNolowe, FedProto.
+    \item \textbf{Chương 3: Phương pháp đề xuất: FedSecL.} Trình bày phương pháp nghiên cứu đề xuất
+    \item \textbf{Chương 4: Phương pháp thực hiện.} Trình bày phương pháp nghiên cứu, tiêu chí so sánh và môi trường thực nghiệm.
+    \item \textbf{Chương 5: Đánh giá và thảo luận.} So sánh kết quả thực nghiệm và phân tích hiệu quả của từng phương pháp.
+    \item \textbf{Chương 6: Tổng kết.} Tóm tắt kết quả đạt được và định hướng phát triển.
+\end{itemize}

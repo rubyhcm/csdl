@@ -1,0 +1,93 @@
+Trong chương này, nhóm đề xuất phương pháp \textbf{FedSecL (Federated Secure Loss-based Aggregation)}. Đây là một phiên bản cải tiến dựa trên nền tảng của thuật toán FedNolowe, bổ sung cơ chế \textbf{"Lớp lọc bảo mật"} (Security Filtering Layer) nhằm khắc phục nhược điểm về an toàn thông tin, đảm bảo sự ổn định của mô hình trước các hành vi gian lận hoặc tấn công từ client.
+
+\section{Động lực và Cơ sở ý tưởng}
+\label{sec:motivation}
+
+\subsection{Hạn chế của phương pháp dựa trên Loss (FedNolowe)}
+Như đã phân tích ở Chương 2, các phương pháp tổng hợp trọng số dựa trên hàm mất mát (như FedNolowe) rất hiệu quả trong việc xử lý dữ liệu Non-IID. Nguyên lý của chúng là: \textit{"Client nào có Loss thấp (học tốt) thì được gán trọng số cao"}.
+
+Tuy nhiên, cơ chế này tồn tại một lỗ hổng bảo mật nghiêm trọng gọi là \textbf{Tấn công đầu độc mô hình (Model Poisoning) thông qua gian lận Loss}:
+\begin{itemize}
+    \item \textbf{Kịch bản tấn công:} Một client ác ý (Malicious Client) có thể không thực hiện huấn luyện (Free-rider) hoặc cố tình phá hoại, nhưng lại báo cáo về Server một giá trị Loss rất nhỏ (giả mạo).
+    \item \textbf{Hậu quả:} Thuật toán sẽ lầm tưởng client này là "học sinh xuất sắc" và gán cho nó trọng số cực lớn. Kết quả là mô hình toàn cục bị điều hướng theo tham số sai lệch của kẻ tấn công, dẫn đến sụp đổ độ chính xác.
+\end{itemize}
+
+\subsection{Ý tưởng cải tiến: "Tin tưởng nhưng Xác minh"}
+Để giải quyết vấn đề này mà vẫn giữ được ưu điểm xử lý Non-IID, nhóm đề xuất bổ sung một Lớp chặn (Blocking Layer) tại Server.
+
+Ý tưởng cốt lõi là sử dụng các \textbf{Thống kê mô tả (Descriptive Statistics)} của tập hợp các giá trị Loss gửi về để xác định ngưỡng an toàn. Bất kỳ giá trị Loss nào nằm ngoài vùng phân phối bình thường (quá cao hoặc quá thấp một cách đáng ngờ) sẽ bị coi là bất thường (Anomaly) và bị loại bỏ khỏi quá trình tổng hợp.
+
+\section{Thiết kế thuật toán FedSecL}
+\label{sec:design}
+
+Phương pháp FedSecL bao gồm hai thành phần chính: Cơ chế phát hiện bất thường và Cơ chế tổng hợp trọng số an toàn.
+
+\subsection{Cơ chế "Lớp chặn" (Security Filtering Layer)}
+Giả sử tại vòng $t$, Server nhận được tập hợp các giá trị loss từ $K$ client: $\mathcal{L}^t = \{\mathcal{L}_1^t, \mathcal{L}_2^t, ..., \mathcal{L}_K^t\}$.
+
+Thay vì dùng trực tiếp các giá trị này, Server thực hiện quy trình lọc 3 bước:
+
+\begin{enumerate}
+    \item \textbf{Bước 1: Tính toán tham số thống kê.}
+    nhóm sử dụng \textit{Trung vị (Median)} thay vì Trung bình (Mean) để làm mốc chuẩn, vì trung vị ít bị ảnh hưởng bởi các giá trị ngoại lai (outliers).
+    \begin{equation}
+        \mu_{med}^t = \text{Median}(\mathcal{L}^t)
+    \end{equation}
+    
+    \item \textbf{Bước 2: Xác định ngưỡng chặn (Thresholding).}
+    Một dải an toàn (Safe Zone) được thiết lập dựa trên độ lệch tuyệt đối trung vị (MAD - Median Absolute Deviation):
+    \begin{equation}
+        \text{MAD}^t = \text{Median}(|\mathcal{L}_i^t - \mu_{med}^t|)
+    \end{equation}
+    Ngưỡng chặn được xác định là: $[\mu_{med}^t - \gamma \cdot \text{MAD}^t, \mu_{med}^t + \gamma \cdot \text{MAD}^t]$, với $\gamma$ là hệ số kiểm soát độ chặt chẽ (thường chọn $\gamma=2$ hoặc $3$).
+
+    \item \textbf{Bước 3: Sàng lọc Client.}
+    Bất kỳ Client $k$ nào có giá trị $\mathcal{L}_k^t$ nằm ngoài khoảng an toàn trên sẽ bị đưa vào danh sách đen (Blacklist) trong vòng này và trọng số $\alpha_k$ bị gán bằng 0.
+    \begin{itemize}
+        \item $\mathcal{L}_k^t$ quá thấp $\rightarrow$ Nghi vấn gian lận giả mạo loss.
+        \item $\mathcal{L}_k^t$ quá cao $\rightarrow$ Nghi vấn dữ liệu rác hoặc tấn công phá hoại.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Cơ chế Tổng hợp Trọng số (Weighted Aggregation)}
+Sau khi đi qua lớp chặn, tập hợp các client hợp lệ $S_{valid}$ sẽ được tính toán trọng số theo công thức chuẩn hóa nghịch đảo (tương tự FedNolowe nhưng an toàn hơn):
+
+\begin{equation}
+    \alpha_k^t = \frac{\exp(-\mathcal{L}_k^t)}{\sum_{j \in S_{valid}} \exp(-\mathcal{L}_j^t)}
+\end{equation}
+nhóm sử dụng hàm mũ $\exp(-x)$ để chuyển đổi Loss thành trọng số, giúp tăng độ mượt mà và tránh các lỗi chia cho 0.
+
+\section{Quy trình thực hiện tổng thể}
+\label{sec:workflow}
+
+Quy trình hoạt động của FedSecL tại mỗi vòng giao tiếp diễn ra như sau:
+
+\begin{center}
+    \begin{minipage}{\linewidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{img/fedsecl_workflow.png}
+        \captionof{figure}{Sơ đồ quy trình hoạt động của FedSecL với lớp màng lọc bảo mật tại Server.}
+        \label{fig:fedsecl_workflow}
+    \end{minipage}
+\end{center}
+
+\begin{itemize}
+    \item \textbf{Bước 1 (Client):} Client tải mô hình toàn cầu, huấn luyện cục bộ trên dữ liệu riêng. Sau đó gửi về Server hai thông tin: Tham số mô hình $w_k$ và Giá trị Loss $\mathcal{L}_k$.
+    
+    \item \textbf{Bước 2 (Server - Lọc):} Server thu thập toàn bộ Loss, tính toán Trung vị và MAD. Các Loss bất thường bị phát hiện và loại bỏ.
+    
+    \item \textbf{Bước 3 (Server - Tính trọng số):} Với các client vượt qua lớp lọc, Server tính trọng số $\alpha_k$ dựa trên Loss của họ.
+    
+    \item \textbf{Bước 4 (Server - Tổng hợp):} Cập nhật mô hình toàn cầu mới:
+    \begin{equation}
+        w_{global} = \sum_{k \in S_{valid}} \alpha_k \cdot w_k
+    \end{equation}
+\end{itemize}
+
+\section{Thảo luận về Ưu điểm}
+Phương pháp FedSecL mang lại sự cân bằng giữa hiệu suất và an toàn:
+\begin{enumerate}
+    \item \textbf{Khả năng kháng nhiễu Non-IID:} Kế thừa ưu điểm của việc dùng Loss để đánh giá chất lượng dữ liệu, giúp mô hình hội tụ tốt hơn FedAvg.
+    \item \textbf{Tính bảo mật cao:} Lớp chặn thống kê giúp loại bỏ hiệu quả các tấn công "Loss Spoofing" (giả mạo loss) và giảm thiểu tác động của các client chứa dữ liệu rác.
+    \item \textbf{Độ phức tạp thấp:} Việc tính toán Trung vị và MAD rất đơn giản ($O(K \log K)$), không làm tăng đáng kể thời gian huấn luyện như các phương pháp mã hóa phức tạp hay Causal Learning.
+\end{enumerate}

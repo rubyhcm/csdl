@@ -1,0 +1,262 @@
+Chương này trình bày phương pháp nghiên cứu được áp dụng để phân tích và đánh giá các thuật toán tổng hợp trọng số tiên tiến trong Federated Learning. Nghiên cứu tập trung vào việc so sánh hiệu quả của 5 thuật toán chính: FedAvg, FedLWS, FedAWA, FedNolowe và FedProto thông qua phân tích lý thuyết và kết quả thực nghiệm từ các công bố khoa học.
+
+\section{Phát biểu bài toán}
+
+Trong môi trường Federated Learning, bài toán tổng hợp trọng số (Weight Aggregation) đóng vai trò then chốt trong việc kết hợp các cập nhật từ nhiều client để tạo ra mô hình toàn cầu tối ưu. Bài toán được phát biểu như sau:
+
+\textbf{Đầu vào (Input):}
+\begin{itemize}
+    \item Hệ thống gồm $K$ clients, mỗi client $k$ có tập dữ liệu cục bộ $\mathcal{D}_k$ với kích thước $n_k$.
+    \item Mô hình toàn cầu ban đầu với tham số $w_t$ tại vòng giao tiếp thứ $t$.
+    \item Các cập nhật mô hình cục bộ $w_k^{t+1}$ sau khi client $k$ huấn luyện trên dữ liệu của mình.
+    \item Dữ liệu phân tán có tính chất Non-IID (không đồng nhất về phân phối).
+\end{itemize}
+
+\textbf{Đầu ra (Output):}
+\begin{itemize}
+    \item Mô hình toàn cầu cập nhật $w_{t+1}$ được tổng hợp từ các mô hình cục bộ.
+    \item Bộ trọng số tối ưu $\{\alpha_1, \alpha_2, ..., \alpha_K\}$ hoặc $\{\lambda_1, \lambda_2, ..., \lambda_K\}$ để kết hợp các cập nhật cục bộ.
+\end{itemize}
+
+\textbf{Mục tiêu:}
+\begin{equation}
+    w_{t+1} = \sum_{k=1}^{K} \alpha_k w_k^{t+1}
+\end{equation}
+
+Sao cho mô hình toàn cầu $w_{t+1}$ đạt được:
+\begin{enumerate}
+    \item Độ chính xác cao trên dữ liệu kiểm thử.
+    \item Khả năng hội tụ nhanh và ổn định.
+    \item Khả năng xử lý tốt dữ liệu Non-IID.
+\end{enumerate}
+
+\section{Phương pháp nghiên cứu}
+
+Đề tài áp dụng phương pháp nghiên cứu kết hợp giữa nghiên cứu tài liệu và phân tích so sánh dựa trên kết quả thực nghiệm từ các công bố khoa học.
+
+\subsection{Nghiên cứu tài liệu}
+
+Quy trình nghiên cứu tài liệu được thực hiện theo các bước sau:
+
+\begin{enumerate}
+    \item \textbf{Thu thập tài liệu:}
+    \begin{itemize}
+        \item Tìm kiếm các bài báo khoa học từ các hội nghị và tạp chí uy tín: NeurIPS, ICML, ICLR, CVPR, AAAI.
+        \item Tập trung vào các công trình được công bố từ năm 2022 đến 2025.
+        \item Sử dụng các từ khóa: "Federated Learning", "Weight Aggregation", "Non-IID", "FedAvg", "FedLWS", "FedAWA", "FedNolowe", "FedProto".
+    \end{itemize}
+    
+    \item \textbf{Phân loại và lựa chọn:}
+    \begin{itemize}
+        \item Phân loại các thuật toán theo cơ chế tổng hợp: dựa trên kích thước dữ liệu, loss, gradient, prototype.
+        \item Lựa chọn 5 thuật toán đại diện: FedAvg (baseline), FedLWS, FedAWA, FedNolowe, FedProto.
+    \end{itemize}
+    
+    \item \textbf{Phân tích chuyên sâu:}
+    \begin{itemize}
+        \item Phân tích cơ sở toán học của từng thuật toán.
+        \item Xác định ưu điểm, nhược điểm và điều kiện áp dụng.
+        \item So sánh độ phức tạp tính toán và yêu cầu băng thông.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Phân tích so sánh}
+
+Các thuật toán được so sánh dựa trên các tiêu chí sau:
+
+\begin{table}[ht]
+    \centering
+    \caption{Các tiêu chí so sánh thuật toán}
+    \label{tab:tieuchi}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|l|p{10cm}|}
+        \hline
+        \textbf{Tiêu chí} & \textbf{Mô tả} \\
+        \hline
+        Độ chính xác & Accuracy trên tập kiểm thử (test accuracy) \\
+        \hline
+        Tốc độ hội tụ & Số vòng giao tiếp (communication rounds) cần thiết để đạt accuracy mục tiêu \\
+        \hline
+        Độ ổn định & Phương sai của accuracy qua các vòng huấn luyện \\
+        \hline
+        Khả năng xử lý Non-IID & Hiệu suất với dữ liệu Non-IID (Dirichlet $\alpha = 0.1$) và IID ($\alpha = 100$) \\
+        \hline
+        Độ phức tạp tính toán & Chi phí tính toán trên server và client \\
+        \hline
+        Yêu cầu băng thông & Kích thước dữ liệu cần truyền giữa client và server \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Thiết kế thực nghiệm}
+
+Mặc dù đề tài này tập trung vào nghiên cứu lý thuyết và phân tích kết quả từ các công bố, nhóm mô tả thiết kế thực nghiệm chuẩn được sử dụng trong các nghiên cứu gốc để đánh giá các thuật toán.
+
+\subsection{Bộ dữ liệu}
+
+Các thuật toán được đánh giá trên hai bộ dữ liệu phổ biến:
+
+\begin{itemize}
+    \item \textbf{MNIST}~\cite{lecun1998mnist}: 
+    \begin{itemize}
+        \item 60,000 ảnh huấn luyện và 10,000 ảnh kiểm thử.
+        \item 10 lớp chữ số viết tay (0-9).
+        \item Kích thước ảnh: $28 \times 28$ pixels, grayscale.
+    \end{itemize}
+    
+
+    \item \textbf{CIFAR-10}~\cite{krizhevsky2009cifar}:
+    \begin{itemize}
+        \item 50,000 ảnh huấn luyện và 10,000 ảnh kiểm thử.
+        \item 10 lớp đối tượng (máy bay, ô tô, chim, mèo, v.v.).
+        \item Kích thước ảnh: $32 \times 32$ pixels, RGB.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Thiết lập phân phối Non-IID}
+
+Để mô phỏng tính không đồng nhất của dữ liệu trong thực tế, các nghiên cứu thường sử dụng phân phối Dirichlet để phân chia dữ liệu cho các client:
+
+\begin{equation}
+    p_k \sim \text{Dir}(\alpha)
+\end{equation}
+
+Trong đó:
+\begin{itemize}
+    \item $p_k$ là phân phối lớp tại client $k$.
+    \item $\alpha$ là tham số điều khiển mức độ Non-IID:
+    \begin{itemize}
+        \item $\alpha = 0.1$: Non-IID mạnh - mỗi client có dữ liệu rất không đồng nhất, chỉ tập trung vào một vài lớp.
+        \item $\alpha = 100$: IID - phân phối đồng nhất, mỗi client có dữ liệu cân bằng từ tất cả các lớp.
+    \end{itemize}
+    \begin{itemize}
+        \item Khi $\alpha$ nhỏ, dữ liệu càng không đồng nhất (Non-IID mạnh).
+        \item Khi $\alpha$ lớn, dữ liệu càng đồng nhất (tiến đến IID).
+    \end{itemize}
+\end{itemize}
+
+\subsection{Cấu hình thực nghiệm}
+
+Các tham số thực nghiệm chuẩn:
+
+\begin{table}[ht]
+    \centering
+    \caption{Cấu hình thực nghiệm}
+    \label{tab:config}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Tham số} & \textbf{Giá trị} \\
+        \hline
+        Số lượng clients ($K$) & 100 \\
+        \hline
+        Tỷ lệ client tham gia ($C$) & 0.1 (10 clients/round) \\
+        \hline
+        Số epochs cục bộ ($E$) & 5 \\
+        \hline
+        Batch size ($B$) & 32 hoặc 64 \\
+        \hline
+        Learning rate ($\eta$) & 0.01 hoặc 0.001 \\
+        \hline
+        Số vòng giao tiếp & 200-500 rounds \\
+        \hline
+        Mô hình & CNN (2 conv layers + 2 FC layers) hoặc ResNet-18 \\
+        \hline
+    \end{tabular}
+\end{table}
+\section{Các độ đo và phương pháp đánh giá}
+
+\subsection{Độ đo hiệu suất}
+
+\begin{itemize}
+    \item \textbf{Test Accuracy:} Độ chính xác trên tập kiểm thử, được tính bằng tỷ lệ phần trăm mẫu được phân loại đúng.
+    
+    \item \textbf{Communication Rounds:} Số vòng giao tiếp cần thiết để đạt được accuracy mục tiêu (ví dụ: 90\% accuracy).
+    
+    \item \textbf{Loss Value:} Giá trị hàm mất mát trung bình trên tập kiểm thử, phản ánh mức độ tự tin của mô hình.
+\end{itemize}
+
+\subsection{Độ đo chi phí}
+
+\begin{itemize}
+    \item \textbf{Computation Cost:} Số lượng FLOPs (Floating Point Operations) cần thiết cho quá trình tổng hợp trên server.
+    
+    \item \textbf{Communication Cost:} Tổng kích thước dữ liệu (MB) cần truyền giữa clients và server trong toàn bộ quá trình huấn luyện.
+\end{itemize}
+
+\subsection{Phương pháp so sánh}
+
+Để đảm bảo tính công bằng, các thuật toán được so sánh trong cùng điều kiện:
+\begin{itemize}
+    \item Cùng kiến trúc mô hình.
+    \item Cùng bộ dữ liệu và cách phân chia Non-IID.
+    \item Cùng siêu tham số (learning rate, batch size, số epochs).
+    \item Chạy với nhiều random seeds khác nhau và lấy trung bình kết quả.
+\end{itemize}
+
+Kết quả được trình bày dưới dạng:
+\begin{itemize}
+    \item Bảng so sánh số liệu (mean $\pm$ standard deviation).
+    \item Đồ thị hội tụ (accuracy/loss theo communication rounds).
+    \item Phân tích định tính về ưu nhược điểm của từng phương pháp.
+\end{itemize}
+
+\section{Môi trường nghiên cứu}
+
+Nghiên cứu này được thực hiện dựa trên phân tích các kết quả thực nghiệm từ các công bố khoa học. Các thí nghiệm gốc thường được thực hiện trên:
+
+\begin{itemize}
+    \item \textbf{Phần cứng:} 
+    \begin{itemize}
+        \item CPU: Intel Core i5-11400 (6-core, 12-thread).
+        \item GPU: NVIDIA GeForce RTX 3060 (12GB VRAM).
+        \item RAM: 16GB DDR4.
+    \end{itemize}
+    
+    \item \textbf{Phần mềm:}
+    \begin{itemize}
+        \item Ngôn ngữ: Python 3.8+.
+        \item Framework: PyTorch 1.10+ hoặc TensorFlow 2.x.
+        \item Thư viện FL: FedML, Flower, PySyft.
+    \end{itemize}
+    
+    \item \textbf{Công cụ phân tích:}
+    \begin{itemize}
+        \item Matplotlib, Seaborn cho visualization.
+        \item NumPy, Pandas cho xử lý dữ liệu.
+        \item Weights \& Biases (W\&B) hoặc TensorBoard cho tracking thí nghiệm.
+    \end{itemize}
+\end{itemize}
+
+\section{Quy trình thực hiện nghiên cứu}
+
+Nghiên cứu được thực hiện theo các bước sau:
+
+\begin{enumerate}
+    \item \textbf{Giai đoạn 1 - Nghiên cứu nền tảng (2 tuần):}
+    \begin{itemize}
+        \item Tìm hiểu cơ bản về Federated Learning và FedAvg.
+        \item Nghiên cứu các vấn đề của dữ liệu Non-IID.
+    \end{itemize}
+    
+    \item \textbf{Giai đoạn 2 - Nghiên cứu chuyên sâu (3 tuần):}
+    \begin{itemize}
+        \item Phân tích chi tiết các thuật toán FedLWS, FedAWA, FedNolowe, FedProto.
+    \end{itemize}
+    
+    \item \textbf{Giai đoạn 3 - Phân tích so sánh (2 tuần):}
+    \begin{itemize}
+        \item Thu thập kết quả thực nghiệm từ các bài báo.
+        \item Tổng hợp và so sánh hiệu suất của các thuật toán.
+    \end{itemize}
+    
+    \item \textbf{Giai đoạn 4 - Đề xuất phương pháp giải quyết các khoảng trống còn tồn tại (2 tuần):}
+    \begin{itemize}
+        \item Đề xuất hướng nghiên cứu tiếp theo.
+    \end{itemize}
+
+    \item \textbf{Giai đoạn 5 - Tổng kết (1 tuần):}
+    \begin{itemize}
+        \item Rút ra kết luận về ưu nhược điểm của từng phương pháp.
+    \end{itemize}
+\end{enumerate}

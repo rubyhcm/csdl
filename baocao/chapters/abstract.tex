@@ -1,0 +1,20 @@
+\chapter*{Tóm tắt}
+
+Học máy liên kết (\ac{fl}) đã nổi lên như một giải pháp hứa hẹn cho việc huấn luyện các mô hình học sâu phân tán mà không cần tập trung dữ liệu, qua đó giải quyết các lo ngại về quyền riêng tư. Tuy nhiên, hiệu suất của \ac{fl} chịu ảnh hưởng nghiêm trọng bởi sự không đồng nhất về thống kê (dữ liệu Non-IID) giữa các thiết bị người dùng (clients), dẫn đến hiện tượng trôi dạt mô hình (client drift) và làm chậm quá trình hội tụ. Trọng tâm của việc giải quyết vấn đề này nằm ở chiến lược tổng hợp trọng số (weight aggregation) tại máy chủ trung tâm.
+
+Đề tài này tập trung vào hai nhiệm vụ chính: (1) Nghiên cứu, so sánh các thuật toán tổng hợp trọng số tiên tiến (SOTA) giai đoạn 2022--2025, và (2) Đề xuất một phương pháp cải tiến mới nhằm nâng cao tính ổn định và an toàn cho hệ thống.
+
+Về mặt lý thuyết, báo cáo đi sâu phân tích cơ chế của các thuật toán tiêu biểu:
+\begin{itemize}
+    \item \textbf{FedAvg (2016):} Thuật toán nền tảng, sử dụng cơ chế trung bình dựa trên kích thước dữ liệu, tuy đơn giản nhưng kém hiệu quả với dữ liệu Non-IID\cite{McMahan2017}.
+    \item \textbf{FedLWS và FedAWA (2025):} Các phương pháp tối ưu hóa trọng số thích ứng dựa trên phương sai lớp và vector cập nhật, giúp giảm thiểu tác động của client drift\cite{Shi2025LWS, Shi2025AWA}.
+    \item \textbf{FedNolowe (2025):} Áp dụng chuẩn hóa dựa trên giá trị hàm mất mát (loss) để ưu tiên các client có hiệu suất tốt\cite{Le2025}.
+    \item \textbf{FedProto (2022):} Tiếp cận theo hướng học dựa trên mẫu hình (prototype), hiệu quả trong việc xử lý sự không đồng nhất về kiến trúc mô hình\cite{Tan2022}.
+\end{itemize}
+
+Về mặt đóng góp, đề tài đề xuất phương pháp \textbf{FedSecL (Federated Secure Loss-based Aggregation)}. Khắc phục nhược điểm về an toàn thông tin của các phương pháp dựa trên Loss truyền thống, FedSecL tích hợp một \textbf{"Lớp lọc bảo mật"} (Security Filtering Layer) sử dụng thống kê trung vị (Median) và độ lệch tuyệt đối (MAD). Cơ chế này chủ động phát hiện và loại bỏ các giá trị loss ngoại lai (bất thường) trước khi tổng hợp, giúp hệ thống kháng lại các dữ liệu nhiễu hoặc hành vi gian lận.
+
+Kết quả thực nghiệm trên bộ dữ liệu CIFAR-10 trong kịch bản Extreme Non-IID cho thấy \textbf{FedSecL cải thiện độ chính xác khoảng 6.07\%} so với thuật toán cơ sở FedAvg. Mặc dù chưa vượt qua hiệu suất tuyệt đối của các thuật toán SOTA (như FedLWS), FedSecL mang lại sự cân bằng tối ưu giữa độ chính xác và khả năng kháng nhiễu (Robustness), mở ra hướng tiếp cận mới cho các ứng dụng FL yêu cầu tính tin cậy cao.
+
+\vspace{1cm}
+\textbf{Từ khóa:} Federated Learning, Aggregation Algorithms, Non-IID Data, FedSecL, FedLWS, FedAWA, Security Filtering, Robust Aggregation.
