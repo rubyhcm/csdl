@@ -250,9 +250,46 @@ BEGIN
 END$$;
 
 -- ────────────────────────────────────────────────
--- 4. VACUUM ANALYZE
+-- 4. Seed audit_ddl_logs (nếu đã cài 09_audit_ddl.sql)
 -- ────────────────────────────────────────────────
-\echo '--- 4. VACUUM ANALYZE ---'
+\echo '--- 4. Seeding audit_ddl_logs (DDL event trigger demo) ---'
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relname = 'audit_ddl_logs' AND n.nspname = 'public'
+    ) THEN
+        RAISE NOTICE 'audit_ddl_logs not found — skipping DDL seed (run 09_audit_ddl.sql first)';
+        RETURN;
+    END IF;
+
+    -- Tạo bảng demo → event trigger ghi CREATE TABLE
+    EXECUTE 'CREATE TABLE IF NOT EXISTS public._ddl_seed_demo (
+        id   BIGSERIAL PRIMARY KEY,
+        name TEXT NOT NULL
+    )';
+
+    -- Thêm cột → event trigger ghi ALTER TABLE
+    EXECUTE 'ALTER TABLE public._ddl_seed_demo ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
+
+    -- Tạo index → event trigger ghi CREATE INDEX
+    EXECUTE 'CREATE INDEX idx_ddl_seed_demo_name ON public._ddl_seed_demo (name)';
+
+    -- Xóa index → event trigger ghi DROP INDEX
+    EXECUTE 'DROP INDEX IF EXISTS public.idx_ddl_seed_demo_name';
+
+    -- Xóa bảng → event trigger ghi DROP TABLE
+    EXECUTE 'DROP TABLE IF EXISTS public._ddl_seed_demo';
+
+    RAISE NOTICE 'audit_ddl_logs seeded with 5 DDL events (CREATE/ALTER/CREATE INDEX/DROP INDEX/DROP TABLE)';
+END$$;
+
+-- ────────────────────────────────────────────────
+-- 5. VACUUM ANALYZE
+-- ────────────────────────────────────────────────
+\echo '--- 5. VACUUM ANALYZE ---'
 VACUUM ANALYZE orders;
 VACUUM ANALYZE products;
 VACUUM ANALYZE audit_logs;
