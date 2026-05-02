@@ -278,6 +278,24 @@ CREATE TABLE audit_logs (
   - **Append-only/WORM**: không cho UPDATE/DELETE log.
   - Tối ưu truy vấn theo **thời gian** và theo `table_name`/`actor`.
 
+- Bảng `audit_ddl_logs` (bổ sung, DDL audit):
+  - Ghi lại mọi thay đổi schema (`CREATE/ALTER/DROP`) qua **Event Trigger** `ON ddl_command_end`.
+  - Cột: `id`, `command_tag` (loại lệnh DDL), `object_type` (TABLE/INDEX/FUNCTION), `object_name` (tên đối tượng), `command_sql` (tóm tắt lệnh), `executed_at`, `user_name`.
+  - Khác `audit_logs`: không cần partitioning (tần suất ghi thấp hơn nhiều), không lưu JSONB old/new (DDL không có row-level data), dùng PK đơn giản (`BIGSERIAL`).
+  - Yêu cầu cài đặt bởi **superuser** (PostgreSQL chỉ cho phép superuser tạo Event Trigger).
+
+```sql
+CREATE TABLE public.audit_ddl_logs (
+    id          BIGSERIAL PRIMARY KEY,
+    command_tag TEXT      NOT NULL,
+    object_type TEXT,
+    object_name TEXT,
+    command_sql TEXT,
+    executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    user_name   TEXT      NOT NULL DEFAULT session_user
+);
+```
+
 ### 2.3. Thiết kế lưu trữ JSONB và lập chỉ mục
 - JSONB là dạng JSON nhị phân đã parse, thuận lợi cho truy vấn có cấu trúc.
 - Quy ước ghi dữ liệu:
@@ -1151,6 +1169,20 @@ CREATE TABLE audit_logs (
 CREATE TABLE audit_logs_2026_04
 PARTITION OF audit_logs
 FOR VALUES FROM ('2026-04-01') TO ('2026-05-01');
+
+-- Bảng security_alerts (autonomous commit via dblink)
+-- Xem sql/01_schema_audit.sql
+
+-- Bảng audit_ddl_logs (DDL audit qua event trigger — sql/09_audit_ddl.sql)
+CREATE TABLE public.audit_ddl_logs (
+    id          BIGSERIAL PRIMARY KEY,
+    command_tag TEXT      NOT NULL,   -- CREATE TABLE, ALTER TABLE, DROP TABLE, ...
+    object_type TEXT,                 -- TABLE, INDEX, FUNCTION, ...
+    object_name TEXT,                 -- tên đầy đủ của đối tượng schema
+    command_sql TEXT,                 -- command_tag || ' ' || object_identity
+    executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    user_name   TEXT      NOT NULL DEFAULT session_user
+);
 ```
 
 ### Phụ lục B — Code PL/pgSQL
