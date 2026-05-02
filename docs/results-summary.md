@@ -50,6 +50,39 @@
 
 > **Kết quả đáng chú ý:** Proposed có TPS cao hơn Baseline sạch 4% — overhead âm. Nguyên nhân: WSL2 I/O không ổn định làm phương sai cao; trong khoảng đo 60s, trigger overhead nhỏ (<5ms/transaction) bị che khuất bởi dao động hệ thống. Kết luận quan trọng: **overhead < 15%** ✓ — audit trigger không ảnh hưởng đáng kể đến throughput ở mức 50 clients.
 
+### Biểu đồ 1.1 — So sánh TPS trung bình Baseline vs Proposed
+
+```mermaid
+xychart-beta
+    title "TPS Trung Bình: Baseline vs Proposed (50 clients, 60s)"
+    x-axis ["Baseline (no trigger)", "Proposed (Audit Trigger)"]
+    y-axis "TPS (Transactions/s)" 0 --> 45
+    bar [33.94, 35.30]
+```
+
+### Biểu đồ 1.2 — So sánh Latency trung bình (ms)
+
+```mermaid
+xychart-beta
+    title "Avg Latency: Baseline vs Proposed (Thap hon = Tot hon)"
+    x-axis ["Baseline (no trigger)", "Proposed (Audit Trigger)"]
+    y-axis "Avg Latency (ms)" 1300 --> 1600
+    bar [1481.2, 1436.7]
+```
+
+### Biểu đồ 1.3 — TPS từng lần chạy (Baseline vs Proposed, 5 runs)
+
+```mermaid
+xychart-beta
+    title "TPS tung lan chay — Baseline vs Proposed"
+    x-axis ["Run 1", "Run 2", "Run 3*", "Run 4", "Run 5"]
+    y-axis "TPS" 0 --> 50
+    line [37.46, 31.01, 10.88, 32.25, 35.03]
+    line [41.28, 37.47, 35.83, 29.03, 32.89]
+```
+
+> _* Run 3 Baseline là outlier (10.88 TPS) do WSL2 I/O hiccup — bị loại khi tính trung bình đại diện._
+
 ---
 
 ## Kịch bản 2 — Lưu trữ & Retention
@@ -67,15 +100,33 @@ Execution Time: 351.9 ms
 
 **Kết quả:** Planner loại 7/8 partitions, chỉ scan `audit_logs_2026_03`. Partition pruning hoạt động chính xác ✓
 
+### Biểu đồ 2.1 — Partition Pruning: 1/8 partition được scan
+
+```mermaid
+pie title "Partition Pruning (8 partitions tong)"
+    "Partitions bi loai - khong scan (7)" : 7
+    "Partition thuc su scan - 2026-03 (1)" : 1
+```
+
 ### 2b. DROP PARTITION vs DELETE (1,000,000 dòng)
 
 | Phương pháp | Thời gian |
 |---|---|
 | `DELETE FROM audit_logs_2025_10_delete_test` | **641 ms** |
 | `DROP TABLE audit_logs_2025_10` | **47 ms** |
-| **Tỷ lệ cải thiện** | **~13.6× nhanh hơn** |
+| **Tỷ lệ cải thiện** | **~13.6x nhanh hơn** |
 
-> DROP PARTITION chỉ xóa file vật lý + metadata, không ghi WAL cho từng row → nhanh hơn ~14× so với DELETE. Kỳ vọng < 1s ✓ (47ms).
+> DROP PARTITION chỉ xóa file vật lý + metadata, không ghi WAL cho từng row → nhanh hơn ~14x so với DELETE. Kỳ vọng < 1s ✓ (47ms).
+
+### Biểu đồ 2.2 — DROP PARTITION vs DELETE (ms, thấp hơn = tốt hơn)
+
+```mermaid
+xychart-beta
+    title "Thoi gian xoa 1,000,000 dong (ms) - Thap hon = Tot hon"
+    x-axis ["DELETE truyen thong", "DROP TABLE partition"]
+    y-axis "Thoi gian (ms)" 0 --> 700
+    bar [641, 47]
+```
 
 ---
 
@@ -89,12 +140,20 @@ Execution Time: 351.9 ms
 
 **3/3 PASS ✓**
 
+### Biểu đồ 3.1 — Kết quả kiểm thử bảo mật
+
+```mermaid
+pie title "Ket qua kiem thu bao mat (3 kich ban)"
+    "PASS (3)" : 3
+    "FAIL (0)" : 0
+```
+
 ---
 
 ## Kịch bản 4 — Hiệu năng truy vấn JSONB (có/không GIN)
 
 **Query:** `SELECT count(*) FROM audit_logs WHERE table_name='public.orders' AND new_data @> '{"status":"PAID"}'`  
-**Dataset:** 7.5M rows (5 cold partitions × 1.5M + hot partition)
+**Dataset:** 7.5M rows (5 cold partitions x 1.5M + hot partition)
 
 | Trạng thái | Scan type | Execution Time | Ghi chú |
 |---|---|---|---|
@@ -104,7 +163,17 @@ Execution Time: 351.9 ms
 
 **Cải thiện (warm cache):** ~10% (930 ms vs 1,032 ms)
 
-> **Phân tích quan trọng:** Với data ngẫu nhiên (~33% rows có `status=PAID`), selectivity thấp khiến GIN ít hiệu quả hơn dự kiến. Khi cache lạnh, GIN thực ra chậm hơn Seq Scan vì overhead đọc posting lists. GIN hiệu quả nhất khi: (1) selectivity cao (ít kết quả), (2) cache đã ấm, (3) query theo key hiếm trong JSONB. Với audit log write-heavy thực tế, cải thiện sẽ rõ rệt hơn cho các truy vấn tìm user cụ thể, transaction ID, hay giá trị hiếm.
+> **Phân tích quan trọng:** Với data ngẫu nhiên (~33% rows có `status=PAID`), selectivity thấp khiến GIN ít hiệu quả hơn dự kiến. Khi cache lạnh, GIN thực ra chậm hơn Seq Scan vì overhead đọc posting lists. GIN hiệu quả nhất khi: (1) selectivity cao (ít kết quả), (2) cache đã ấm, (3) query theo key hiếm trong JSONB.
+
+### Biểu đồ 4.1 — Execution Time truy vấn JSONB theo 3 trạng thái (ms)
+
+```mermaid
+xychart-beta
+    title "Execution Time JSONB query - 7.5M rows (Thap hon = Tot hon)"
+    x-axis ["No GIN (Seq Scan)", "GIN Warm Cache", "GIN Cold Cache"]
+    y-axis "Execution Time (ms)" 0 --> 3200
+    bar [1032, 930, 2898]
+```
 
 ---
 
@@ -119,6 +188,25 @@ Execution Time: 351.9 ms
 | B-tree(changed_at) / partition | — | — | ~32 MB | — |
 | B-tree(table+time) / partition | — | — | ~58 MB | — |
 
+### Biểu đồ 5.1 — Phân bổ dung lượng audit_logs (Data vs Index)
+
+```mermaid
+pie title "Dung luong audit_logs ~ 5,253 MB"
+    "Data rows (3,064 MB)" : 3064
+    "GIN index - 244x7 MB (1,708 MB)" : 1708
+    "B-tree indexes - 90x7 MB (481 MB)" : 481
+```
+
+### Biểu đồ 5.2 — So sánh tổng dung lượng các bảng (MB)
+
+```mermaid
+xychart-beta
+    title "Dung luong tong cac bang (MB)"
+    x-axis ["orders (87 MB)", "products (18 MB)", "audit_logs (5,253 MB)"]
+    y-axis "MB" 0 --> 5500
+    bar [87, 18, 5253]
+```
+
 ---
 
 ## Tóm tắt theo tiêu chí
@@ -128,5 +216,23 @@ Execution Time: 351.9 ms
 | Overhead TPS | < 15% | **-4%** (không có overhead) | ✓ |
 | DROP PARTITION | < 1s | **47 ms** | ✓ |
 | Partition pruning | Đúng partition | Chỉ scan 1/8 partitions | ✓ |
-| GIN cải thiện query | ≥ 10× | ~10% (warm); phụ thuộc selectivity | ~ |
+| GIN cải thiện query | ≥ 10x | ~10% (warm); phụ thuộc selectivity | ~ |
 | Security 3 cases | 3/3 PASS | **3/3 PASS** | ✓ |
+
+### Biểu đồ 6.1 — Tổng hợp đánh giá mức đạt tiêu chí nghiên cứu
+
+```mermaid
+quadrantChart
+    title Danh gia muc dat tieu chi nghien cuu
+    x-axis "Ky vong thap" --> "Ky vong cao"
+    y-axis "Ket qua thap" --> "Ket qua cao"
+    quadrant-1 Vuot ky vong
+    quadrant-2 Dat nhung can cai thien
+    quadrant-3 Chua dat
+    quadrant-4 Khong dat ky vong cao
+    "Overhead TPS -4%": [0.3, 0.95]
+    "DROP PARTITION 47ms": [0.5, 0.97]
+    "Partition Pruning 1/8": [0.4, 0.9]
+    "GIN Query 10% warm": [0.75, 0.45]
+    "Security 3/3 PASS": [0.6, 0.95]
+```

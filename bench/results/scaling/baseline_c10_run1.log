@@ -1,0 +1,2506 @@
+pgbench (16.10 (Ubuntu 16.10-0ubuntu0.24.04.1))
+pgbench: pghost: localhost pgport: 5432 nclients: 10 duration: 70 dbName: audit_poc
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 4 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 1 receiving
+pgbench: client 8 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 6 receiving
+pgbench: client 8 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 9 receiving
+pgbench: client 9 executing script "bench/update_orders.sql"
+pgbench: client 9 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 9 receiving
+pgbench: client 8 receiving
+pgbench: client 8 executing script "bench/update_orders.sql"
+pgbench: client 8 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 8 receiving
+pgbench: client 4 receiving
+pgbench: client 4 executing script "bench/update_orders.sql"
+pgbench: client 4 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 4 receiving
+pgbench: client 3 receiving
+pgbench: client 3 executing script "bench/update_orders.sql"
+pgbench: client 3 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 3 receiving
+pgbench: client 7 receiving
+pgbench: client 7 executing script "bench/update_orders.sql"
+pgbench: client 7 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 7 receiving
+pgbench: client 1 receiving
+pgbench: client 1 executing script "bench/update_orders.sql"
+pgbench: client 1 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 1 receiving
+pgbench: client 2 receiving
+pgbench: client 2 executing script "bench/update_orders.sql"
+pgbench: client 2 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 2 receiving
+pgbench: client 6 receiving
+pgbench: client 6 executing script "bench/update_orders.sql"
+pgbench: client 6 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 6 receiving
+pgbench: client 5 receiving
+pgbench: client 5 executing script "bench/update_orders.sql"
+pgbench: client 5 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 5 receiving
+pgbench: client 0 receiving
+pgbench: client 0 executing script "bench/update_orders.sql"
+pgbench: client 0 sending UPDATE orders
+SET status = (ARRAY['PENDING','PAID','SHIPPED','CANCELLED'])[floor(random()*4+1)]
+WHERE id = (floor(random() * 1000000) + 1)::bigint;
+pgbench: client 0 receiving
