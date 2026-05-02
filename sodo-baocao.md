@@ -98,15 +98,15 @@ erDiagram
     }
     
     AUDIT_LOGS {
-        BIGSERIAL id PK
-        TIMESTAMP changed_at PK "Partition Key"
+        BIGSERIAL id PK "Composite PK (id, changed_at)"
+        TIMESTAMP changed_at PK "Composite PK — Partition Key RANGE"
         TEXT table_name
         TEXT operation "INSERT / UPDATE / DELETE"
         TEXT user_name "Actor (session_user)"
         JSONB old_data "Dữ liệu trước thay đổi"
         JSONB new_data "Dữ liệu sau thay đổi"
         BYTEA prev_hash "Chuỗi liên kết trước"
-        BYTEA hash "Chuỗi băm hiện tại"
+        BYTEA hash "SHA-256 tamper-evident"
     }
     
     SECURITY_ALERTS {
@@ -233,37 +233,33 @@ xychart-beta
 
 ```mermaid
 flowchart TB
-    subgraph L1["Lớp 1 — Phân quyền (GRANT/REVOKE)"]
+    subgraph L1["Lớp 1 — Phân quyền (GRANT / REVOKE)"]
         AppUser([app_user])
         Auditor([auditor - chỉ đọc])
         DBA([db_admin])
     end
 
+    AuditLogs[("audit_logs<br/>partitioned · append-only")]
+
     subgraph L2["Lớp 2 — Immutability / WORM (BEFORE trigger + dblink)"]
-        WORMTrigger["func_prevent_audit_change()
-        RAISE EXCEPTION khi UPDATE/DELETE"]
-        SecurityAlerts[("security_alerts
-        (autonomous commit via dblink)")]
+        WORMTrigger["func_prevent_audit_change()<br/>RAISE EXCEPTION khi UPDATE/DELETE"]
+        SecurityAlerts[("security_alerts<br/>autonomous commit via dblink")]
     end
 
     subgraph L3["Lớp 3 — Tamper-evident (SHA-256 hash chain)"]
-        HashChain["Hash mỗi row:
-        hash = SHA256(prev_hash || payload)"]
-        Verifier["func_verify_hash_chain()
-        phát hiện chuỗi bị phá vỡ"]
+        HashChain["hash = SHA256(prev_hash || payload)"]
+        Verifier["func_verify_hash_chain()<br/>phát hiện chuỗi bị phá vỡ"]
     end
 
-    AuditLogs[("audit_logs
-    (partitioned, append-only)")]
+    Alert[/"Phát hiện can thiệp"/]
 
-    AppUser -->|"INSERT/UPDATE/DELETE nghiệp vụ
-    → trigger ghi log"| AuditLogs
-    Auditor -->|"SELECT (read-only)"| AuditLogs
-    DBA -. "cố UPDATE/DELETE" .->|"BỊ CHẶN"| WORMTrigger
-    WORMTrigger --> SecurityAlerts
-    WORMTrigger -->|"EXCEPTION → Rollback"| DBA
+    AppUser -->|"DML nghiệp vụ → trigger ghi log"| AuditLogs
+    Auditor -->|"SELECT read-only"| AuditLogs
+    DBA -.->|"cố UPDATE/DELETE — BỊ CHẶN"| WORMTrigger
+    WORMTrigger -->|"autonomous INSERT"| SecurityAlerts
+    WORMTrigger -->|"RAISE EXCEPTION → Rollback"| DBA
 
     AuditLogs --> HashChain
     HashChain --> Verifier
-    Verifier -->|"chain_ok = FALSE"| Alert["Phát hiện can thiệp"]
+    Verifier -->|"chain_ok = FALSE"| Alert
 ```
