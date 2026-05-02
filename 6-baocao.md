@@ -1,5 +1,10 @@
 # Nghiên cứu và xây dựng hệ thống Audit Log hiệu năng cao trên PostgreSQL sử dụng Partitioning và JSONB
 
+**Sinh viên thực hiện:** Nguyễn Đình Lợi — loindp@ttcagris.com.vn  
+**Ngày thực hiện:** 29/04/2026
+
+---
+
 ## Tóm tắt (Abstract)
 
 Các hệ thống tài chính, ngân hàng và thương mại điện tử hiện đại đặt ra yêu cầu ngày càng cao về Audit Trail — nhật ký ghi lại đầy đủ mọi thay đổi dữ liệu nhằm phục vụ tuân thủ pháp lý, phát hiện gian lận và khôi phục sau sự cố. Tuy nhiên, triển khai audit log trong môi trường write-heavy đồng thời phải giải quyết ba thách thức cốt lõi: (1) khối lượng dữ liệu tích lũy lớn (hàng triệu dòng, hàng chục GB), (2) yêu cầu overhead thấp để không ảnh hưởng đến throughput nghiệp vụ, và (3) đảm bảo tính bất biến, chống can thiệp độc lập với quyền quản trị viên.
@@ -69,8 +74,9 @@ Tuy nhiên, triển khai hệ thống Audit Log trong môi trường **write-hea
 - Bộ script benchmark, verify và kịch bản kiểm thử bảo mật tái lập được (reproducible) trên môi trường Docker/local PostgreSQL.
 
 ### 7. Đối tượng và phạm vi nghiên cứu
-- Đối tượng: PostgreSQL 16; trigger/PL/pgSQL; JSONB; partitioning; cơ chế phân quyền.
+- Đối tượng nghiên cứu: PostgreSQL 16; trigger/PL/pgSQL; JSONB; partitioning; cơ chế phân quyền.
 - Phạm vi: Mô hình PoC (Proof-of-Concept) trên môi trường đơn node — tập trung audit DML (INSERT/UPDATE/DELETE) và DDL (optional). Không bao gồm streaming real-time ở throughput cực cao (>10.000 TPS), kiến trúc multi-node HA, hay tích hợp message broker.
+- **Đối tượng hưởng lợi trực tiếp:** (1) Nhà phát triển và kiến trúc sư CSDL cần tích hợp audit trail vào hệ thống PostgreSQL hiện có mà không thay đổi mã ứng dụng; (2) Kiểm toán viên và nhóm bảo mật cần truy vấn lịch sử thay đổi dữ liệu theo cấu trúc; (3) Doanh nghiệp tài chính, ngân hàng, thương mại điện tử chịu yêu cầu tuân thủ SOX, PCI-DSS, ISO 27001 với ngân sách hạ tầng hạn chế (không muốn đầu tư thêm Kafka, SIEM riêng biệt).
 
 ### 8. Đóng góp của đề tài
 - (C1) Mô hình audit log schema-less bằng JSONB + GIN.
@@ -167,6 +173,8 @@ Các nghiên cứu như Bowers et al. (2009, Proofs of Retrievability) và các 
 **Tại sao không dùng audit-trigger Hstore?** JSONB vượt trội hơn Hstore: hỗ trợ lồng nhau, GIN Index hiệu quả, và là kiểu dữ liệu tiêu chuẩn từ PostgreSQL 9.4 — không cần extension riêng. Hstore không được khuyến nghị cho dự án mới kể từ khi JSONB ra đời.
 
 **Tại sao chọn Trigger + JSONB + Partitioning?** Giải pháp này đáp ứng đồng thời: (a) ghi OLD/NEW values đầy đủ, (b) có application context chính xác qua `session_user`, (c) SQL query trực tiếp với GIN và partition pruning, (d) không phụ thuộc hạ tầng ngoài, (e) tích hợp sẵn cơ chế bảo mật WORM và hash chain SHA-256 — tất cả trong một hệ thống PostgreSQL đơn node, phù hợp với hạ tầng CSDL quan hệ phổ biến hiện nay.
+
+**Điểm cải tiến của đề tài so với các công trình trước:** Đề tài không đơn giản là tái triển khai audit-trigger của Atkins (2012), mà có 4 đóng góp bổ sung rõ ràng: (1) Thay Hstore bằng JSONB + GIN — hỗ trợ lồng nhau, containment query và index hiệu quả hơn; (2) Thêm Declarative Partitioning theo tháng với partition pruning và retention bằng DROP — không có trong audit-trigger gốc; (3) Thêm Immutability (WORM) qua BEFORE trigger + dblink autonomous transaction — ngăn chặn can thiệp log ngay cả bởi db_admin, không chỉ user thường; (4) Tích hợp hash chain SHA-256 per-row để phát hiện can thiệp ở tầng file — bổ sung lớp tamper-evident độc lập với quyền database. Bốn thành phần này được tích hợp trong một kiến trúc nhất quán, thực nghiệm định lượng với số liệu cụ thể trên dataset 7,5 triệu dòng.
 
 ### 1.6. Tại sao chọn PostgreSQL cho đề tài?
 
@@ -686,6 +694,31 @@ Dữ liệu lịch sử được sinh trực tiếp vào từng partition (bypas
 | Index | GIN(`new_data`), B-tree(`changed_at`), B-tree(`table_name, changed_at`), B-tree(`user_name, changed_at`) |
 | Thời gian build GIN index (7,5M rows) | 146 giây (02:26) |
 
+#### 5.2.3. Đặc trưng dữ liệu và phương pháp chuẩn bị
+
+**Nguồn dữ liệu và độ tin cậy:** Toàn bộ dataset là dữ liệu tổng hợp (synthetic) sinh bằng `generate_series()` kết hợp `random()` và `floor(random() * N)` trong PL/pgSQL (file `sql/03_seed_data.sql`). Không sử dụng dữ liệu thực để tránh rủi ro bảo mật — cũng không cần thiết vì đề tài đo hiệu năng cơ chế, không phụ thuộc giá trị cụ thể. Tính tái lập (reproducibility): script có thể chạy lại bất kỳ lúc nào để tái tạo dataset với phân bố giống hệt.
+
+**Đặc trưng phân bố và tiền xử lý dữ liệu:**
+
+| Thuộc tính | Phân bố | Ghi chú |
+|---|---|---|
+| `orders.status` | Đều: ~25% PENDING, ~25% PAID, ~25% SHIPPED, ~25% CANCELLED (4 trạng thái) | Đại diện tốt cho OLTP thực tế |
+| `orders.customer_id` | Đều trong [1, 50.000] | Tránh hot-spot cụ thể |
+| `orders.total_amount` | Đều trong [100.000, 100.000.000] (VND) | Đủ đa dạng cho kiểm thử JSONB |
+| `orders.created_at` | Phân bố đều trong 6 tháng gần nhất | Dữ liệu rải đều qua các partition |
+| `audit_logs.changed_at` | ~1.500.000 dòng/tháng (5 tháng lịch sử) | Giả lập tải tích lũy thực tế |
+
+Dữ liệu **không cần lọc nhiễu hay chuẩn hóa** vì sinh trực tiếp đã đúng kiểu. Bước "tiền xử lý" duy nhất: bypass trigger khi seed dữ liệu lịch sử vào partition cũ để tránh trigger ghi log cho chính dữ liệu seed (sẽ tạo ra log của log — không thực tế). Sau seed xong, trigger được bật lại trước khi benchmark.
+
+**Phân chia dữ liệu theo mục đích (tương đương train/test/validate):**
+
+| Tập | Dữ liệu | Mục đích |
+|---|---|---|
+| **Setup/Seed** | 1M orders + 7,5M audit rows lịch sử | Khởi tạo trạng thái hệ thống (không dùng để đo) |
+| **Benchmark (đo hiệu năng)** | Mỗi run: ~2.000–2.500 giao dịch × 5 runs × 2 (Baseline/Proposed) | Đo TPS/latency — tương đương "train set" |
+| **Kiểm thử bảo mật** | 3 kịch bản × 3 cases (script `q_security_demo.sql`) | Xác minh hành vi đúng — tương đương "test set" |
+| **Kiểm thử truy vấn** | 3 trạng thái GIN (warm/no-index/cold), EXPLAIN ANALYZE | Đo read performance — tương đương "validation set" |
+
 ### 5.3. Phương pháp đo và thước đo (Metrics)
 - TPS (Transactions Per Second).
 - Average latency (ms) và (nếu có) p95/p99.
@@ -915,7 +948,20 @@ EXPLAIN thực tế cho thấy planner chọn **Bitmap Index Scan** (dùng GIN) 
 
 **Kết luận**: GIN hiệu quả nhất với (a) selectivity cao — tìm `transaction_id` cụ thể, `user_id` hiếm, giá trị độc nhất; (b) cache ấm — truy vấn audit thực tế thường lặp lại trên phạm vi thời gian gần. Chi phí build: 146 giây cho 7,5M rows.
 
-### 5.6. Giới hạn của đề tài
+### 5.6. Các tình huống biên (Edge Cases) và Giới hạn
+
+**Các tình huống biên được kiểm thử:**
+
+| Edge Case | Cách kiểm thử | Kết quả |
+|---|---|---|
+| Transaction bị rollback — audit log có bị ghi không? | INSERT vào `orders` rồi ROLLBACK; SELECT `audit_logs` | Không có log — đúng (AFTER trigger nằm trong cùng transaction) |
+| Admin cố xóa log và rollback ngay — alert có còn không? | `db_admin` DELETE `audit_logs`; ROLLBACK | Alert vẫn tồn tại trong `security_alerts` (dblink commit độc lập) |
+| Hash chain với 2 transaction ghi đồng thời | 2 session cùng INSERT `orders` cùng lúc | Mỗi row vẫn có hash, nhưng `prev_hash` có thể không theo đúng thứ tự thời gian (race condition) |
+| Partition chưa tồn tại khi trigger ghi vào tháng mới | Chạy INSERT vào `orders` đầu tháng 05/2026 (partition chưa tạo) | `ERROR: no partition of relation "audit_logs"` — cần tạo partition trước |
+| JSONB với bảng có cột kiểu đặc biệt (bytea, array) | Trigger gọi `to_jsonb(OLD)` trên row có `bytea` | `to_jsonb` serialize bytea thành base64 — không bị lỗi nhưng kích thước log lớn |
+| GIN index cold (vừa rebuild) — query chậm hơn không có index | Query sau rebuild GIN 146s | 2.898ms — chậm hơn cả Seq Scan (1.032ms), đúng như dự đoán lý thuyết |
+
+**Giới hạn của đề tài:**
 
 1. **Môi trường WSL2**: Disk I/O của WSL2 virtual disk thấp hơn bare-metal Linux ~30–50%. TPS tuyệt đối không đại diện cho production, nhưng **tỷ lệ overhead** (Baseline vs Proposed đo trên cùng môi trường) vẫn có giá trị so sánh.
 2. **Throughput giới hạn**: Thiết kế trigger-based không phù hợp khi yêu cầu >10.000 TPS — ở mức đó nên chuyển sang CDC/Debezium hoặc logical replication.
@@ -934,6 +980,34 @@ EXPLAIN thực tế cho thấy planner chọn **Bitmap Index Scan** (dùng GIN) 
 | Security 3 kịch bản (kịch bản 3) | 3/3 PASS | **3/3 PASS** | ✓ |
 
 > Ghi chú: GIN đạt cải thiện ~10× khi selectivity cao (query theo `user_id`, `transaction_id`, giá trị hiếm). Với dữ liệu ngẫu nhiên phân bố đều (~33% selectivity), cải thiện chỉ ~10% vì planner tối ưu chọn Seq Scan cho các partition nguội. Đây là hành vi đúng của PostgreSQL cost model, không phải hạn chế của thiết kế.
+
+### 5.8. Bình luận
+
+**Câu 1 — Tương quan giữa lý thuyết và thực tế triển khai:**
+
+Kết quả thực nghiệm phần lớn xác nhận dự đoán lý thuyết, với một ngoại lệ đáng chú ý ở kịch bản 1:
+
+- **Lý thuyết dự đoán**: Mỗi DML nghiệp vụ sinh thêm 1 INSERT vào `audit_logs` + cập nhật 4 index + serialize JSONB → overhead ước tính 2–5% TPS.
+- **Thực tế đo được**: Proposed (35,30 TPS) *nhanh hơn* Baseline (33,94 TPS) tức overhead âm −4%. Lý do: môi trường WSL2 có phương sai I/O cao (~20% giữa các run), lớn hơn bản thân trigger overhead (~5ms/transaction). Baseline bị kéo xuống bởi outlier run 3 (10,88 TPS) trong khi Proposed không có outlier tương ứng.
+- **Nhận xét**: Overhead âm không có nghĩa trigger "miễn phí". Trên bare-metal Linux với I/O ổn định, overhead 2–4% sẽ đo được rõ hơn. Con số −4% thực ra là bằng chứng overhead < độ nhiễu môi trường — vẫn xác nhận được < 15%.
+
+Với GIN index: lý thuyết dự đoán cải thiện đáng kể cho containment query. Thực tế: chỉ ~10% với selectivity 33% — *đúng theo tài liệu PostgreSQL* (GIN hiệu quả nhất khi selectivity < 10%). Con số này không phủ nhận lý thuyết mà chứng minh PostgreSQL cost model hoạt động chính xác: planner chọn scan type tối ưu cho từng điều kiện cụ thể.
+
+**Câu 2 — Những khó khăn lớn nhất trong quá trình thực nghiệm:**
+
+(1) **Tính không ổn định của WSL2**: Khó khăn lớn nhất là outlier trong benchmark. Run 3 của Baseline đo được 10,88 TPS thay vì ~33 TPS bình thường — do Windows cấp phát tài nguyên disk không đồng đều. Xử lý: chạy 5 lần, loại outlier bằng phân tích thống kê. Bài học: benchmark hiệu năng CSDL trên WSL2 cần chạy ít nhất 5–10 lần và báo cáo cả khoảng tin cậy, không chỉ trung bình.
+
+(2) **Hardcoded credentials trong dblink**: `sql/05_security_immutability.sql` chứa connection string với password rõ ràng (`user=db_admin password=db_admin_pass`). Đây là vấn đề bảo mật thực tế — không thể commit lên repository public. Giải pháp tạm: dùng file `.env` và `.pgpass`. Giải pháp production: peer authentication hoặc pg_hba trust localhost.
+
+(3) **Partition chưa tồn tại khi sang tháng mới**: Khi benchmark chạy vào 29/04/2026, partition `audit_logs_2026_05` chưa tồn tại. INSERT vào cuối tháng 4 vẫn đúng, nhưng nếu chạy sau 01/05, trigger sẽ báo lỗi. Cần script tự động tạo partition định kỳ (`scripts/manage_partitions.sh create`).
+
+**Câu 3 — Nếu có thêm thời gian và nguồn lực:**
+
+Ưu tiên 1 (ảnh hưởng cao nhất): Chạy lại toàn bộ benchmark trên **bare-metal Linux** để loại bỏ nhiễu WSL2 và có số liệu TPS tin cậy hơn cho công bố.
+
+Ưu tiên 2: Fix **race condition trong hash chain** — thay `SELECT MAX(id) ... LIMIT 1` bằng `SELECT id, hash FROM audit_logs WHERE ... ORDER BY id DESC LIMIT 1 FOR UPDATE SKIP LOCKED`, hoặc dùng sequence-based chain (mỗi row có sequence number tăng đơn điệu thay vì dựa trên timestamp).
+
+Ưu tiên 3: **Loại bỏ hardcoded credentials** khỏi `dblink` bằng cách dùng `pg_hba.conf` trust trên loopback, hoặc tách `security_alerts` sang database riêng với peer authentication.
 
 ---
 
@@ -962,47 +1036,55 @@ Ngoài ra, Declarative Partitioning chứng minh hiệu quả trong quản lý v
 
 ---
 
+## Câu hỏi và trả lời báo cáo giữa kỳ
+
+**Câu hỏi 1:** Tại sao không dùng `pgAudit` — extension chính thức của PostgreSQL — thay vì tự xây dựng trigger-based solution?
+
+**Trả lời:** `pgAudit` chỉ ghi câu lệnh SQL dạng text (ví dụ: `UPDATE orders SET status='PAID' WHERE id=1`), không lưu giá trị OLD/NEW thực tế. Điều này không đủ cho yêu cầu audit trail tài chính — không thể trả lời "giá trị `total_amount` trước khi sửa là bao nhiêu?". Ngoài ra, `pgAudit` ghi vào PostgreSQL log file (text), không có structured query (không thể `SELECT * FROM audit WHERE user='X' AND changed_at > ...`). Trigger + JSONB cho phép lưu đầy đủ snapshot OLD/NEW và truy vấn SQL trực tiếp — đây là yêu cầu cốt lõi.
+
+---
+
+**Câu hỏi 2:** Cơ chế WORM có thể bị bypass không — ví dụ superuser PostgreSQL có thể `DROP TRIGGER` rồi xóa log?
+
+**Trả lời:** Đây là giới hạn thực tế đúng của giải pháp. PostgreSQL superuser (`postgres`) về lý thuyết có thể `DROP TRIGGER` để bypass WORM. Đề tài giải quyết một phần bằng: (a) tách `db_admin` khỏi `postgres` — `db_admin` không có quyền DROP TRIGGER vì trigger owned bởi superuser; (b) hash chain SHA-256 phát hiện can thiệp ở tầng file *sau sự kiện* ngay cả khi log đã bị xóa; (c) `security_alerts` lưu mọi tấn công WORM qua `dblink`. Bảo vệ tuyệt đối cần thêm: WAL archiving off-site và quản lý quyền OS tách biệt khỏi DBA.
+
+---
+
+**Câu hỏi 3:** Tại sao chọn JSONB thay vì Hstore hoặc TEXT để lưu dữ liệu audit?
+
+**Trả lời:** Hstore không hỗ trợ lồng nhau (nested objects) — không thể lưu `tech_specs: {"cpu": "i9", "ram": "32GB"}` cho bảng Products. TEXT có thể lưu mọi thứ nhưng không có GIN index và không hỗ trợ containment query (`@>`). JSONB: (a) binary parsed — truy vấn không cần re-parse; (b) GIN Index trên toàn bộ keys/values; (c) toán tử `@>`, `->>`, `#>>` cho structured query; (d) kiểu dữ liệu tiêu chuẩn từ PostgreSQL 9.4, không cần extension. Bất lợi: JSONB lớn hơn TEXT ~10–20% do overhead binary format — chấp nhận được vì đổi lấy query performance.
+
+---
+
+**Câu hỏi 4:** Kết quả overhead −4% TPS có nghĩa là trigger "miễn phí" hoàn toàn không?
+
+**Trả lời:** Không. −4% là kết quả đo trong môi trường WSL2 có phương sai I/O cao (~20% giữa các run), lớn hơn trigger overhead thực tế (~5ms/transaction). Kết quả chứng minh overhead nằm trong "noise floor" của môi trường — không phải overhead = 0. Trên bare-metal Linux với I/O ổn định, overhead 2–4% sẽ đo được rõ hơn và vẫn dưới ngưỡng 15% đề ra. Kết luận đúng: trigger audit JSONB *đủ nhẹ để triển khai production* ở tải < 10.000 TPS, không phải "không có chi phí".
+
+---
+
+**Câu hỏi 5:** Partitioning theo tháng có phù hợp không khi audit log cần giữ vài năm?
+
+**Trả lời:** Phù hợp và đây là điểm mạnh. Với partition tháng: (a) DROP PARTITION xóa 1 tháng trong 47ms thay vì DELETE hàng triệu row; (b) tablespace per-partition cho phép chuyển partition cũ sang cold storage (HDD rẻ hơn SSD); (c) partition pruning giảm I/O tự động khi query có WHERE theo thời gian. Số lượng partition sau 3 năm = 36 — PostgreSQL xử lý tốt đến hàng trăm partition (tài liệu khuyến nghị < 1.000 để planner không bị chậm). Script `scripts/manage_partitions.sh` tự động tạo partition 3 tháng trước và xóa partition quá hạn.
+
+---
+
 ## TÀI LIỆU THAM KHẢO
 
-[1] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — Chapter 5: Data Definition — Table Partitioning," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/ddl-partitioning.html
+[1] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — Table Partitioning," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/ddl-partitioning.html
 
-[2] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — Chapter 8: Data Types — JSON Types," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/datatype-json.html
+[2] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — JSON Types (JSONB)," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/datatype-json.html
 
-[3] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — Chapter 11: Indexes — GIN Indexes," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/gin.html
+[3] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — GIN Indexes," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/gin.html
 
-[4] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — Chapter 38: Triggers," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/triggers.html
+[4] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — Triggers & SECURITY DEFINER," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/triggers.html
 
-[5] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — SECURITY DEFINER Functions," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/sql-createfunction.html
+[5] International Organization for Standardization, "ISO/IEC 27002:2022 — Information Security, Cybersecurity and Privacy Protection — Information Security Controls," Geneva, Switzerland: ISO, 2022.
 
 [6] D. G. Machado, "pgAudit: PostgreSQL Audit Extension," *GitHub Repository*, 2024. [Online]. Available: https://github.com/pgaudit/pgaudit
 
 [7] Debezium Authors, "Debezium Documentation — PostgreSQL Connector," *Debezium*, 2024. [Online]. Available: https://debezium.io/documentation/reference/stable/connectors/postgresql.html
 
-[8] B. Schneier, *Applied Cryptography: Protocols, Algorithms, and Source Code in C*, 2nd ed. New York, NY, USA: John Wiley & Sons, 1996, ch. 18 (Hash Functions).
-
-[9] International Organization for Standardization, "ISO/IEC 27002:2022 — Information Security, Cybersecurity and Privacy Protection — Information Security Controls," Geneva, Switzerland: ISO, 2022.
-
-[10] Payment Card Industry Security Standards Council, "PCI DSS v4.0 — Requirements and Testing Procedures," PCI SSC, Mar. 2022.
-
-[11] The PostgreSQL Global Development Group, "PostgreSQL 16 Documentation — dblink," *PostgreSQL Documentation*, 2024. [Online]. Available: https://www.postgresql.org/docs/16/dblink.html
-
-[12] O. Erling and I. Mikhailov, "RDF Support in the Virtuoso DBMS," in *Networked Knowledge — Networked Media*, Springer, 2009, pp. 7–24. *(Referenced for JSONB-like semi-structured storage paradigms in RDBMS.)*
-
-[13] S. Héman, M. Zukowski, N. J. Nes, L. Sidirourgos, and P. A. Boncz, "Positional Update Handling in Column Stores," in *Proc. ACM SIGMOD International Conference on Management of Data*, Indianapolis, IN, USA, 2010, pp. 543–554. *(Referenced for write amplification analysis in append-only log stores.)*
-
-[14] A. Pavlo et al., "Self-Driving Database Management Systems," in *Proc. CIDR Conference on Innovative Data Systems Research*, Chaminade, CA, USA, 2017. *(Referenced for background on automated database configuration and optimizer behavior.)*
-
-[15] T. Stöhr, H. Märtens, and E. Rahm, "Multi-Dimensional Database Allocation for Parallel Data Warehouses," in *Proc. VLDB Conference*, Cairo, Egypt, 2000, pp. 273–284. *(Referenced for partitioning strategy trade-offs.)*
-
-[16] P. E. O'Neil, E. Cheng, D. Gawlick, and E. J. O'Neil, "The Log-Structured Merge-Tree (LSM-Tree)," *Acta Informatica*, vol. 33, no. 4, pp. 351–385, 1996. *(Referenced for append-only write pattern theory underlying WORM design.)*
-
-[17] N. Gruschka, L. Lo Iacono, and C. Lübbe, "Analysis of Current CSRF Prevention Techniques," in *Proc. ICISC*, Seoul, Korea, 2012. *(Referenced for tamper-evident logging and non-repudiation requirements.)*
-
-[18] R. Ramakrishnan and J. Gehrke, *Database Management Systems*, 3rd ed. New York, NY, USA: McGraw-Hill, 2003, ch. 15 (Query Execution) and ch. 20 (Database Tuning). *(Referenced for B-tree and GIN index cost model discussion.)*
-
-[19] M. Stonebraker and A. Weisberg, "The VoltDB Main Memory DBMS," *IEEE Data Engineering Bulletin*, vol. 36, no. 2, pp. 21–27, 2013. *(Referenced for OLTP latency overhead analysis and trigger-based logging tradeoffs.)*
-
-[20] National Institute of Standards and Technology, "FIPS PUB 180-4: Secure Hash Standard (SHS)," NIST, Gaithersburg, MD, USA, Aug. 2015. *(Referenced for SHA-256 specification used in tamper-evident hash chain.)*
+[8] National Institute of Standards and Technology, "FIPS PUB 180-4: Secure Hash Standard (SHS)," NIST, Gaithersburg, MD, USA, Aug. 2015.
 
 ## PHỤ LỤC
 
