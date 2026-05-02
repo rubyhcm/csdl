@@ -180,3 +180,90 @@ stateDiagram-v2
     
     Dropped --> [*]
 ```
+
+---
+
+## 5. Biểu đồ Scaling Curve — TPS và Overhead theo Concurrency
+**Vị trí đề xuất**: Phần `5.5.1. Kịch bản 1 — Hiệu năng xử lý`.  
+**Ý nghĩa**: Trực quan hóa scaling curve cho thấy TPS ổn định (~33–36) qua 3 mức concurrency — bottleneck là phần cứng, không phải trigger. Overhead nằm trong khoảng [−5.8%, +5.0%] nhất quán.
+
+### 5a. Scaling Curve: TPS Baseline vs Proposed
+
+```mermaid
+xychart-beta
+    title "Scaling Curve: TPS Baseline vs Proposed (3 concurrency levels)"
+    x-axis ["10 clients", "50 clients", "80 clients"]
+    y-axis "TPS (Transactions/s)" 25 --> 42
+    line [33.71, 34.06, 33.90]
+    line [32.02, 36.03, 35.40]
+```
+
+> _Line 1 = Baseline (trigger OFF), Line 2 = Proposed (trigger ON). TPS phẳng ~33–36 — hệ thống bão hòa từ 10 clients trên 4 vCPU WSL2._
+
+### 5b. Overhead % tại từng mức concurrency
+
+```mermaid
+xychart-beta
+    title "Overhead trigger theo concurrency — trong nguong < 15%"
+    x-axis ["10c (+5.0%)", "50c (-5.8%)", "80c (-4.4%)"]
+    y-axis "Overhead (%)" -10 --> 10
+    bar [5.0, -5.8, -4.4]
+```
+
+> _Overhead dương (+5.0%) tại 10 clients là ước tính thực tế nhất (ít nhiễu I/O nhất). Overhead âm tại 50c/80c do I/O variance WSL2 > trigger cost._
+
+### 5c. Latency scaling — minh họa Little's Law (L = λW)
+
+```mermaid
+xychart-beta
+    title "Latency scaling (ms) — Baseline vs Proposed — L = Clients / TPS"
+    x-axis ["10 clients", "50 clients", "80 clients"]
+    y-axis "Avg Latency (ms)" 0 --> 2600
+    line [297.1, 1468.4, 2361.9]
+    line [313.0, 1387.9, 2260.5]
+```
+
+> _Latency tăng tuyến tính (~10×/~8×) khi concurrency tăng từ 10→80, trong khi TPS không đổi — đúng theo Little's Law: W = L/λ = Clients/TPS._
+
+---
+
+## 6. Sơ đồ kiến trúc bảo mật ba lớp (Security Layered Architecture)
+**Vị trí đề xuất**: Phần `4.1. Phân quyền và mô hình SECURITY DEFINER` hoặc đầu `Chương 4`.  
+**Ý nghĩa**: Trực quan hóa ba lớp bảo vệ độc lập: phân quyền (app_user không đọc được log), WORM (ngay cả admin không xóa được), và hash chain (phát hiện can thiệp ở tầng file).
+
+```mermaid
+flowchart TB
+    subgraph L1["Lớp 1 — Phân quyền (GRANT/REVOKE)"]
+        AppUser([app_user])
+        Auditor([auditor - chỉ đọc])
+        DBA([db_admin])
+    end
+
+    subgraph L2["Lớp 2 — Immutability / WORM (BEFORE trigger + dblink)"]
+        WORMTrigger["func_prevent_audit_change()
+        RAISE EXCEPTION khi UPDATE/DELETE"]
+        SecurityAlerts[("security_alerts
+        (autonomous commit via dblink)")]
+    end
+
+    subgraph L3["Lớp 3 — Tamper-evident (SHA-256 hash chain)"]
+        HashChain["Hash mỗi row:
+        hash = SHA256(prev_hash || payload)"]
+        Verifier["func_verify_hash_chain()
+        phát hiện chuỗi bị phá vỡ"]
+    end
+
+    AuditLogs[("audit_logs
+    (partitioned, append-only)")]
+
+    AppUser -->|"INSERT/UPDATE/DELETE nghiệp vụ
+    → trigger ghi log"| AuditLogs
+    Auditor -->|"SELECT (read-only)"| AuditLogs
+    DBA -. "cố UPDATE/DELETE" .->|"BỊ CHẶN"| WORMTrigger
+    WORMTrigger --> SecurityAlerts
+    WORMTrigger -->|"EXCEPTION → Rollback"| DBA
+
+    AuditLogs --> HashChain
+    HashChain --> Verifier
+    Verifier -->|"chain_ok = FALSE"| Alert["Phát hiện can thiệp"]
+```

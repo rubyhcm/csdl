@@ -83,10 +83,19 @@ This guide walks you through setting up and running the **Audit Log PoC** on a f
 
 10. **Run the benchmark**
 
+    **Option A — Single-point (50 clients, 5 runs each):**
     ```bash
     bash bench/run_baseline.sh
     bash bench/run_proposed.sh
     ```
+
+    **Option B — Scaling curve (10 / 50 / 80 clients, 3 runs each) — recommended for thesis:**
+    ```bash
+    bash bench/run_scaling.sh
+    ```
+    Output: `bench/results/scaling/` with per-run logs and a final summary table.
+
+    > **Note on max_connections:** The default `max_connections = 100` limits pgbench to ≤ 97 clients (3 reserved for superusers). To test at 100+ clients, increase `max_connections` in `postgresql.conf` and restart PostgreSQL, or use PgBouncer as a connection pooler.
 
     After each run the scripts will output **performance metrics** collected via `pg_stat_statements` (see *Performance Monitoring* below).
 

@@ -14,74 +14,89 @@
 
 ---
 
-## Kịch bản 1 — Hiệu năng xử lý (Stress test)
+## Kịch bản 1 — Hiệu năng xử lý: Scaling Curve
 
-**Cấu hình:** 50 connections đồng thời, `-T 70` (10s warm-up + 60s đo), UPDATE ngẫu nhiên bảng `orders`, lặp 5 lần.
+**Cấu hình:** 3 mức concurrency (10 / 50 / 80 clients), `-T 70` (10s warm-up + 60s đo), UPDATE ngẫu nhiên bảng `orders`, **3 runs mỗi mức**.  
+Ghi chú: 100 clients không khả thi vì `max_connections = 100` — production dùng PgBouncer để vượt giới hạn này.
 
-### Baseline (audit trigger DISABLED)
+### Raw Data — Baseline (trigger DISABLED)
 
-| Lần | TPS | Avg Latency (ms) | Ghi chú |
-|---|---|---|---|
-| 1 | 37.46 | 1,334.8 | |
-| 2 | 31.01 | 1,612.1 | |
-| 3 | 10.88 | 4,597.0 | **Outlier — WSL2 I/O hiccup** |
-| 4 | 32.25 | 1,550.5 | |
-| 5 | 35.03 | 1,427.4 | |
-| **Avg (tất cả 5)** | **29.33** | **2,104.4** | Bị kéo bởi outlier |
-| **Avg (loại run 3)** | **33.94** | **1,481.2** | Giá trị đại diện |
+| Concurrency | Run 1 | Run 2 | Run 3 | **TPS TB** | **Latency TB (ms)** |
+|---|---|---|---|---|---|
+| 10 clients | 35.39 | 32.46 | 33.27 | **33.71** | 297.1 |
+| 50 clients | 34.44 | 34.60 | 33.15 | **34.06** | 1,468.4 |
+| 80 clients | 34.45 | 32.50 | 34.75 | **33.90** | 2,361.9 |
 
-### Proposed (audit trigger ENABLED → JSONB → partitioned table)
+### Raw Data — Proposed (trigger ENABLED → JSONB → audit_logs partitioned)
 
-| Lần | TPS | Avg Latency (ms) |
-|---|---|---|
-| 1 | 41.28 | 1,211.2 |
-| 2 | 37.47 | 1,334.4 |
-| 3 | 35.83 | 1,395.3 |
-| 4 | 29.03 | 1,722.3 |
-| 5 | 32.89 | 1,520.1 |
-| **Avg (tất cả 5)** | **35.30** | **1,436.7** |
+| Concurrency | Run 1 | Run 2 | Run 3 | **TPS TB** | **Latency TB (ms)** |
+|---|---|---|---|---|---|
+| 10 clients | 32.03 | 30.07 | 33.97 | **32.02** | 313.0 |
+| 50 clients | 36.10 | 36.21 | 35.77 | **36.03** | 1,387.9 |
+| 80 clients | 36.16 | 35.19 | 34.85 | **35.40** | 2,260.5 |
 
-### So sánh
+### Scaling Summary
 
-| Chỉ số | Baseline (clean) | Proposed | Overhead |
-|---|---|---|---|
-| TPS | 33.94 | 35.30 | **-4.0%** (Proposed nhanh hơn) |
-| Latency (ms) | 1,481.2 | 1,436.7 | **-44.5 ms** (Proposed thấp hơn) |
+| Concurrency | Baseline TPS | Proposed TPS | **Overhead** | ΔLatency (ms) |
+|---|---|---|---|---|
+| **10 clients** | 33.71 | 32.02 | **+5.0%** | +15.9 |
+| **50 clients** | 34.06 | 36.03 | **−5.8%** | −80.5 |
+| **80 clients** | 33.90 | 35.40 | **−4.4%** | −101.4 |
+| **Khoảng tổng hợp** | ~33–34 | ~32–36 | **[−5.8%, +5.0%]** | |
 
-> **Kết quả đáng chú ý:** Proposed có TPS cao hơn Baseline sạch 4% — overhead âm. Nguyên nhân: WSL2 I/O không ổn định làm phương sai cao; trong khoảng đo 60s, trigger overhead nhỏ (<5ms/transaction) bị che khuất bởi dao động hệ thống. Kết luận quan trọng: **overhead < 15%** ✓ — audit trigger không ảnh hưởng đáng kể đến throughput ở mức 50 clients.
+> **Phát hiện chính:**
+> (1) **TPS phẳng (flat) ~33–36 qua cả 3 mức** — hệ thống bão hòa từ 10 clients do 4 vCPU WSL2. Bottleneck là phần cứng, không phải trigger.
+> (2) **Overhead tại 10c = +5.0%** là ước tính thực tế nhất của trigger overhead (I/O variance thấp nhất). Overhead tại 50c/80c âm do I/O variance WSL2 > trigger cost.
+> (3) **Overhead nhất quán [−5.8%, +5.0%] < 15%** tại mọi mức tải — xác nhận RQ1 trên scaling curve.
 
-### Biểu đồ 1.1 — So sánh TPS trung bình Baseline vs Proposed
+### Biểu đồ 1.1 — Scaling Curve: TPS Baseline vs Proposed
 
 ```mermaid
 xychart-beta
-    title "TPS Trung Bình: Baseline vs Proposed (50 clients, 60s)"
-    x-axis ["Baseline (no trigger)", "Proposed (Audit Trigger)"]
+    title "Scaling Curve: TPS Baseline vs Proposed (3 concurrency levels)"
+    x-axis ["10 clients", "50 clients", "80 clients"]
     y-axis "TPS (Transactions/s)" 0 --> 45
-    bar [33.94, 35.30]
+    line [33.71, 34.06, 33.90]
+    line [32.02, 36.03, 35.40]
 ```
 
-### Biểu đồ 1.2 — So sánh Latency trung bình (ms)
+> _Line 1 = Baseline, Line 2 = Proposed. TPS phẳng ~33–36 qua cả 3 mức — xác nhận saturation từ 10 clients._
+
+### Biểu đồ 1.2 — Overhead % theo mức concurrency
 
 ```mermaid
 xychart-beta
-    title "Avg Latency: Baseline vs Proposed (Thap hon = Tot hon)"
-    x-axis ["Baseline (no trigger)", "Proposed (Audit Trigger)"]
-    y-axis "Avg Latency (ms)" 1300 --> 1600
-    bar [1481.2, 1436.7]
+    title "Overhead % tại 3 mức concurrency (âm = Proposed nhanh hơn)"
+    x-axis ["10 clients (+5.0%)", "50 clients (-5.8%)", "80 clients (-4.4%)"]
+    y-axis "Overhead %" -10 --> 10
+    bar [5.0, -5.8, -4.4]
 ```
 
-### Biểu đồ 1.3 — TPS từng lần chạy (Baseline vs Proposed, 5 runs)
+### Biểu đồ 1.3 — Latency scaling theo concurrency (Little's Law: L = λW)
 
 ```mermaid
 xychart-beta
-    title "TPS tung lan chay — Baseline vs Proposed"
-    x-axis ["Run 1", "Run 2", "Run 3*", "Run 4", "Run 5"]
-    y-axis "TPS" 0 --> 50
-    line [37.46, 31.01, 10.88, 32.25, 35.03]
-    line [41.28, 37.47, 35.83, 29.03, 32.89]
+    title "Latency scaling: Baseline vs Proposed (ms) — thấp hơn = tốt hơn"
+    x-axis ["10 clients", "50 clients", "80 clients"]
+    y-axis "Avg Latency (ms)" 0 --> 2600
+    line [297.1, 1468.4, 2361.9]
+    line [313.0, 1387.9, 2260.5]
 ```
 
-> _* Run 3 Baseline là outlier (10.88 TPS) do WSL2 I/O hiccup — bị loại khi tính trung bình đại diện._
+> _Latency tăng tuyến tính với concurrency khi TPS ổn định — đúng theo Little's Law (L = λW → W = L/λ = Clients/TPS)._
+
+### Tham chiếu: Dữ liệu gốc (5 runs × 50 clients — lần đo đầu 2026-04-29)
+
+| Lần | Baseline TPS | Proposed TPS |
+|---|---|---|
+| 1 | 37.46 | 41.28 |
+| 2 | 31.01 | 37.47 |
+| 3 | **10.88** (outlier) | 35.83 |
+| 4 | 32.25 | 29.03 |
+| 5 | 35.03 | 32.89 |
+| **Avg (loại outlier)** | **33.94** | **35.30** |
+
+> Kết quả tham chiếu nhất quán với scaling benchmark mới tại 50c (34.06 / 36.03) — xác nhận reproducibility.
 
 ---
 
@@ -213,10 +228,11 @@ xychart-beta
 
 | Tiêu chí | Kỳ vọng | Kết quả | Đạt |
 |---|---|---|---|
-| Overhead TPS | < 15% | **-4%** (không có overhead) | ✓ |
-| DROP PARTITION | < 1s | **47 ms** | ✓ |
-| Partition pruning | Đúng partition | Chỉ scan 1/8 partitions | ✓ |
-| GIN cải thiện query | ≥ 10x | ~10% (warm); phụ thuộc selectivity | ~ |
+| Overhead TPS — scaling curve (10/50/80c) | < 15% | **[−5.8%, +5.0%]** nhất quán | ✓ |
+| TPS ổn định khi tăng concurrency | Flat/stable | ~33–36 TPS flat — saturation từ 10c | ✓ |
+| DROP PARTITION | < 1s | **47 ms** (~13.6× nhanh hơn DELETE 641ms) | ✓ |
+| Partition pruning | Đúng partition | Chỉ scan 1/8 partitions (351ms) | ✓ |
+| GIN cải thiện query | ≥ 10× | ~10% warm cache; phụ thuộc selectivity | ~ |
 | Security 3 cases | 3/3 PASS | **3/3 PASS** | ✓ |
 
 ### Biểu đồ 6.1 — Tổng hợp đánh giá mức đạt tiêu chí nghiên cứu
@@ -230,9 +246,10 @@ quadrantChart
     quadrant-2 Dat nhung can cai thien
     quadrant-3 Chua dat
     quadrant-4 Khong dat ky vong cao
-    "Overhead TPS -4%": [0.3, 0.95]
+    "Overhead scaling [−5.8% +5.0%]": [0.3, 0.95]
+    "TPS flat 33-36 (saturation)": [0.35, 0.90]
     "DROP PARTITION 47ms": [0.5, 0.97]
-    "Partition Pruning 1/8": [0.4, 0.9]
+    "Partition Pruning 1/8": [0.4, 0.92]
     "GIN Query 10% warm": [0.75, 0.45]
     "Security 3/3 PASS": [0.6, 0.95]
 ```

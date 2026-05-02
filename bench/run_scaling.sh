@@ -10,7 +10,7 @@ RESULTS_DIR="bench/results/scaling"
 SCRIPT="bench/update_orders.sql"
 RUNS=3
 DURATION=70          # 10s warm-up + 60s đo
-LEVELS=(10 50 100)
+LEVELS=(10 50 80)
 HOT_PARTITION="audit_logs_$(date '+%Y_%m')"
 
 mkdir -p "$RESULTS_DIR"
@@ -48,8 +48,8 @@ run_level() {
       -f "$SCRIPT" \
       --no-vacuum \
       > "$LOGFILE" 2>&1
-    TPS=$(grep "tps" "$LOGFILE" | grep "excluding" | awk '{printf "%.2f", $4}')
-    LAT=$(grep "latency average" "$LOGFILE" | awk '{printf "%.1f", $3}')
+    TPS=$(grep "^tps" "$LOGFILE" | awk '{printf "%.2f", $3}')
+    LAT=$(grep "latency average" "$LOGFILE" | awk '{printf "%.1f", $4}')
     echo "TPS=${TPS}  lat=${LAT}ms"
     psql "$DB" -q -c "VACUUM ANALYZE orders;" 2>/dev/null
     sleep 2
@@ -84,14 +84,14 @@ printf "%-8s | %-14s | %-14s | %-10s | %-12s\n" \
   "Clients" "Baseline TPS" "Proposed TPS" "Overhead" "Latency B/P"
 
 for c in "${LEVELS[@]}"; do
-  B_AVG=$(grep "tps" "${RESULTS_DIR}/baseline_c${c}_run"*.log \
-    | grep "excluding" | awk '{sum+=$4;n++} END {printf "%.2f", sum/n}')
-  P_AVG=$(grep "tps" "${RESULTS_DIR}/proposed_c${c}_run"*.log \
-    | grep "excluding" | awk '{sum+=$4;n++} END {printf "%.2f", sum/n}')
+  B_AVG=$(grep "^tps" "${RESULTS_DIR}/baseline_c${c}_run"*.log \
+    | awk '{sum+=$3;n++} END {printf "%.2f", sum/n}')
+  P_AVG=$(grep "^tps" "${RESULTS_DIR}/proposed_c${c}_run"*.log \
+    | awk '{sum+=$3;n++} END {printf "%.2f", sum/n}')
   B_LAT=$(grep "latency average" "${RESULTS_DIR}/baseline_c${c}_run"*.log \
-    | awk '{sum+=$3;n++} END {printf "%.1f", sum/n}')
+    | awk '{sum+=$4;n++} END {printf "%.1f", sum/n}')
   P_LAT=$(grep "latency average" "${RESULTS_DIR}/proposed_c${c}_run"*.log \
-    | awk '{sum+=$3;n++} END {printf "%.1f", sum/n}')
+    | awk '{sum+=$4;n++} END {printf "%.1f", sum/n}')
   OV=$(awk -v b="$B_AVG" -v p="$P_AVG" \
     'BEGIN {printf "%.1f%%", (b-p)/b*100}')
   printf "%-8s | %-14s | %-14s | %-10s | %s / %s ms\n" \
