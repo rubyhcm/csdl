@@ -88,7 +88,7 @@ sequenceDiagram
 
 ## 3. Sơ đồ thực thể liên kết (ER Diagram)
 **Vị trí đề xuất**: Phần `2.2. Thiết kế mô hình dữ liệu audit (Schema Design)`.
-**Ý nghĩa**: Trình bày cấu trúc dữ liệu của các thành phần tham gia trong hệ thống, nhấn mạnh mối liên hệ từ bảng nghiệp vụ đến bảng lịch sử (Audit Logs) và bảng cảnh báo bảo mật (Security Alerts).
+**Ý nghĩa**: Trình bày cấu trúc dữ liệu của các thành phần tham gia trong hệ thống, nhấn mạnh mối liên hệ từ bảng nghiệp vụ đến bảng lịch sử (Audit Logs), bảng cảnh báo bảo mật (Security Alerts) và bảng audit DDL (Audit DDL Logs).
 
 ```mermaid
 erDiagram
@@ -117,9 +117,20 @@ erDiagram
         TEXT user_name
         JSONB details "Chi tiết về vi phạm"
     }
+
+    AUDIT_DDL_LOGS {
+        BIGSERIAL id PK
+        TEXT command_tag "CREATE TABLE / ALTER TABLE / DROP"
+        TEXT object_type "TABLE / INDEX / FUNCTION"
+        TEXT object_name "Tên đối tượng schema"
+        TEXT command_sql "Tóm tắt lệnh DDL"
+        TIMESTAMP executed_at
+        TEXT user_name "Actor (session_user)"
+    }
     
-    BUSINESS_TABLES ||--o{ AUDIT_LOGS : "Ghi nhật ký qua Trigger"
+    BUSINESS_TABLES ||--o{ AUDIT_LOGS : "Ghi nhật ký DML qua AFTER Trigger"
     AUDIT_LOGS ||--o{ SECURITY_ALERTS : "Phát hiện can thiệp tạo Alert"
+    BUSINESS_TABLES ||--o{ AUDIT_DDL_LOGS : "Thay đổi schema qua Event Trigger"
 ```
 
 ---

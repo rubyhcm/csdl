@@ -67,11 +67,11 @@ This guide walks you through setting up and running the **Audit Log PoC** on a f
 
 8. **(Optional) Hash chain tamper-evident + DDL audit**
 
-   `06_hash_chain.sql` cài `pgcrypto` tự động. `09_audit_ddl.sql` kích hoạt event trigger cho DDL.
+   `06_hash_chain.sql` cài `pgcrypto` tự động. `09_audit_ddl.sql` kích hoạt event trigger cho DDL — **yêu cầu superuser** vì `CREATE EVENT TRIGGER` chỉ dành cho superuser.
 
    ```bash
    psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/06_hash_chain.sql
-   psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/09_audit_ddl.sql
+   psql "postgresql://postgres:postgres@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/09_audit_ddl.sql
    ```
 
 9. **Indexes và phân quyền**

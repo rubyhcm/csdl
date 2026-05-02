@@ -53,8 +53,8 @@ psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=
 # 7. (Optional) Hash chain
 psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/06_hash_chain.sql
 
-# 8. (Optional) DDL Audit - Audit các thay đổi schema
-psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/09_audit_ddl.sql
+# 8. (Optional) DDL Audit - Audit các thay đổi schema (requires superuser — event trigger creation)
+psql "postgresql://postgres:postgres@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/09_audit_ddl.sql
 
 # 9. Indexes
 psql "postgresql://db_admin:db_admin_pass@localhost/audit_poc" -v ON_ERROR_STOP=1 -f sql/07_indexes.sql
