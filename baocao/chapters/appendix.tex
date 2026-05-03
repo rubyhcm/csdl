@@ -1,4 +1,152 @@
-\chapter{Công bố khoa học}
-Trong phần này, chúng tôi xin đính kèm một bài báo khoa học liên quan đến đề tài khóa luận của chúng tôi:
+\chapter*{Phụ lục}
+\markboth{PHỤ LỤC}{PHỤ LỤC}
+\addcontentsline{toc}{chapter}{Phụ lục}
 
-...
+\section*{Phụ lục A --- DDL các bảng}
+
+\begin{sloppypar}Xem file \texttt{sql/01\_\allowbreak{}schema\_\allowbreak{}audit.sql} (bảng \texttt{audit\_logs} partitioned, \texttt{security\_alerts}) và \texttt{sql/02\_\allowbreak{}schema\_\allowbreak{}business.sql} (bảng \texttt{orders}, \texttt{products}).\end{sloppypar}
+
+\textbf{Tóm tắt schema:}
+
+\begin{center}
+\captionof{listing}{DDL --- bảng audit logs và security alerts}
+\label{lst:appendix-ddl}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+-- Bảng audit chính (partitioned)
+CREATE TABLE audit_logs (
+    id          BIGSERIAL,
+    table_name  TEXT      NOT NULL,
+    operation   TEXT      NOT NULL,   -- INSERT / UPDATE / DELETE
+    user_name   TEXT,
+    old_data    JSONB,
+    new_data    JSONB,
+    changed_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    prev_hash   BYTEA,                -- tamper-evident chain
+    hash        BYTEA,
+    PRIMARY KEY (id, changed_at)
+) PARTITION BY RANGE (changed_at);
+
+-- Partition theo tháng (ví dụ tháng 4/2026)
+CREATE TABLE audit_logs_2026_04
+PARTITION OF audit_logs
+FOR VALUES FROM ('2026-04-01') TO ('2026-05-01');
+
+-- Bảng security_alerts (autonomous commit via dblink)
+-- Xem sql/01_schema_audit.sql
+
+-- Bảng audit_ddl_logs (DDL audit qua event trigger --- sql/09_audit_ddl.sql)
+CREATE TABLE public.audit_ddl_logs (
+    id          BIGSERIAL PRIMARY KEY,
+    command_tag TEXT      NOT NULL,   -- CREATE TABLE, ALTER TABLE, DROP TABLE, ...
+    object_type TEXT,                 -- TABLE / INDEX / FUNCTION
+    object_name TEXT,                 -- full object name within schema
+    command_sql TEXT,                 -- command_tag || ' ' || object_identity
+    executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    user_name   TEXT      NOT NULL DEFAULT session_user
+);
+\end{Verbatim}
+\end{center}
+
+\section*{Phụ lục B --- Code PL/pgSQL}
+
+Xem các file SQL trong thư mục \texttt{sql/}:
+
+\begin{center}
+\captionof{table}{Code PL/pgSQL chính}
+\label{tab:code-files}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{File} & \textbf{Nội dung} \\
+\midrule
+\texttt{sql/04\_audit\_function.sql} & \texttt{func\_audit\_trigger()} --- generic audit trigger, SECURITY DEFINER, \texttt{session\_user} \\
+\texttt{sql/05\_security\_immutability.sql} & \texttt{func\_prevent\_audit\_change()} --- immutability trigger + dblink autonomous alert \\
+\texttt{sql/06\_hash\_chain.sql} & \texttt{func\_audit\_hash\_chain()} --- SHA-256 hash chain; \texttt{func\_verify\_hash\_chain()} --- verifier \\
+\texttt{sql/09\_audit\_ddl.sql} & \texttt{func\_audit\_ddl()} --- event trigger audit DDL (CREATE/ALTER), lưu vào \texttt{audit\_ddl\_logs} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section*{Phụ lục C --- Script benchmark và verify}
+
+\begin{center}
+\captionof{table}{Script benchmark và kiểm thử}
+\label{tab:benchmark-scripts}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{File} & \textbf{Mô tả} \\
+\midrule
+\texttt{bench/update\_orders.sql} & pgbench script: UPDATE ngẫu nhiên 1 đơn hàng \\
+\texttt{bench/run\_baseline.sh} & Chạy 5 lần baseline (trigger disabled), in TPS/latency \\
+\texttt{bench/run\_proposed.sh} & Chạy 5 lần proposed (trigger enabled), tính overhead vs baseline \\
+\texttt{bench/analyze\_performance.sh} & Phân tích \texttt{pg\_stat\_statements}: top queries, audit impact \\
+\texttt{bench/monitor.sh} & Real-time monitoring: connections, TPS, WAL, cache hit ratio \\
+\texttt{verify/q\_partition\_pruning.sql} & Đo DROP PARTITION vs DELETE; EXPLAIN partition pruning \\
+\texttt{verify/q\_gin\_comparison.sql} & Đo JSONB query có/không GIN index (auto drop/recreate) \\
+\texttt{verify/q\_security\_demo.sql} & Demo 3 kịch bản tấn công (PASS/FAIL) \\
+\texttt{verify/q\_ddl\_audit.sql} & Demo DDL audit: lịch sử DDL, live capture, thống kê theo user/command \\
+\texttt{verify/q\_jsonb\_examples.sql} & Ví dụ truy vấn JSONB phục vụ kiểm toán \\
+\texttt{verify/q\_hash\_verifier.sql} & Kiểm tra tính toàn vẹn hash chain \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section*{Phụ lục D --- Truy vấn mẫu phục vụ kiểm toán}
+
+\begin{center}
+\captionof{listing}{D1. Lịch sử thay đổi 50 dòng gần nhất trên bảng orders}
+\label{lst:query-d1}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+SELECT operation, user_name,
+       old_data->>'status' AS old_status,
+       new_data->>'status' AS new_status,
+       changed_at
+FROM audit_logs
+WHERE table_name = 'public.orders'
+ORDER BY changed_at DESC LIMIT 50;
+\end{Verbatim}
+\end{center}
+
+\begin{center}
+\captionof{listing}{D2. Truy vấn JSONB --- tìm đơn hàng chuyển sang PAID}
+\label{lst:query-d2}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+SELECT id, user_name, old_data->>'status' AS old_status, changed_at
+FROM audit_logs
+WHERE table_name = 'public.orders'
+  AND new_data @> '{"status": "PAID"}';
+\end{Verbatim}
+\end{center}
+
+\begin{center}
+\captionof{listing}{D3. Truy vết actor --- ai thay đổi nhiều nhất hôm nay}
+\label{lst:query-d3}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+SELECT user_name, operation, count(*) AS cnt
+FROM audit_logs
+WHERE changed_at::date = current_date
+GROUP BY user_name, operation
+ORDER BY cnt DESC;
+\end{Verbatim}
+\end{center}
+
+\begin{center}
+\captionof{listing}{D4. Kiểm tra tính toàn vẹn hash chain}
+\label{lst:query-d4}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+SELECT chain_ok, count(*)
+FROM func_verify_hash_chain('public.orders')
+GROUP BY chain_ok;
+-- chain_ok = true: hợp lệ; false: có dòng bị sửa trực tiếp tầng file
+\end{Verbatim}
+\end{center}
+
+\begin{center}
+\captionof{listing}{D5. Phân tích DDL audit --- lịch sử thay đổi schema}
+\label{lst:query-d5}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers= left, numbersep=5pt, breaklines]
+SELECT command_tag, object_type, object_name, user_name, executed_at
+FROM audit_ddl_logs
+WHERE executed_at >= '2026-04-01'
+ORDER BY executed_at DESC;
+\end{Verbatim}
+\end{center}

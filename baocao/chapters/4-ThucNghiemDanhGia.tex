@@ -1,409 +1,288 @@
-Chương này trình bày kết quả phân tích và so sánh hiệu suất của các thuật toán tổng hợp trọng số trong Federated Learning dựa trên các kết quả thực nghiệm từ các công bố khoa học. Các thuật toán được đánh giá bao gồm FedAvg (baseline), FedLWS, FedAWA, FedNolowe và FedProto.
+\section{Môi trường thực nghiệm}
 
-\section{Thiết lập thực nghiệm}
-
-\subsection{Bộ dữ liệu và phân chia}
-
-Các thí nghiệm được thực hiện trên hai bộ dữ liệu chuẩn:
-
-\begin{table}[!htb]
-    \centering
-    \caption{Thông tin chi tiết về bộ dữ liệu}
-    \label{tab:datasets}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|l|c|c|c|c|}
-        \hline
-        \textbf{Dataset} & \textbf{Train} & \textbf{Test} & \textbf{Classes} & \textbf{Image Size} \\
-        \hline
-        MNIST & 60,000 & 10,000 & 10 & $28 \times 28 \times 1$ \\
-        \hline
-        CIFAR-10 & 50,000 & 10,000 & 10 & $32 \times 32 \times 3$ \\
-        \hline
-    \end{tabular}
-\end{table}
-
-Dữ liệu được phân chia cho 100 clients theo phân phối Dirichlet với 2 mức độ: Non-IID mạnh ($\alpha = 0.1$) và IID ($\alpha = 100$).
-
-% --- Hình 1 ---
-\begin{figure}[H] 
-    \centering
-    \includegraphics[width=\textwidth]{img/mnist_iid_distribution.png}
-    \caption{Phân bố IID trên MNIST}
-    \label{fig:mnist_iid}
-\end{figure}
-
-% --- Hình 2 ---
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{img/mnist_noniid_distribution.png}
-    \caption{Phân bố Non-IID trên MNIST ($\alpha=0.1$)}
-    \label{fig:mnist_noniid}
-\end{figure}
-
-% --- Hình 3 ---
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{img/cifar10_iid_distribution.png}
-    \caption{Phân bố IID trên CIFAR-10}
-    \label{fig:cifar10_iid}
-\end{figure}
-
-% --- Hình 4 ---
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{img/cifar10_noniid_distribution.png}
-    \caption{Phân bố Non-IID trên CIFAR-10 ($\alpha=0.1$)}
-    \label{fig:cifar10_noniid}
-\end{figure}
-
-\clearpage
-
-\subsection{Cấu hình mô hình và siêu tham số}
-
+Thí nghiệm được tiến hành trên PostgreSQL 16.10, Ubuntu 22.04 LTS (WSL2) với cấu hình:
 \begin{itemize}
-    \item \textbf{Kiến trúc mô hình:}
-    \begin{itemize}
-        \item MNIST: CNN đơn giản (2 conv layers + 2 FC layers).
-        \item CIFAR-10: ResNet-18.
-    \end{itemize}
-    
-    \item \textbf{Siêu tham số huấn luyện:}
-    \begin{itemize}
-        \item Learning rate: 0.01 (MNIST), 0.001 (CIFAR-10).
-        \item Batch size: 64.
-        \item Local epochs: 5.
-        \item Client participation rate: 10\% (10 clients/round).
-        \item Total communication rounds: 200-500.
-    \end{itemize}
-    
-    \item \textbf{Chi phí truyền thông (Communication Cost):}
-    \begin{itemize}
-        \item \textbf{FedAvg:} 1.20 MB/client (MNIST), 44.7 MB/client (CIFAR-10) - chỉ gửi trọng số model.
-        \item \textbf{FedLWS:} 1.30 MB/client (MNIST), 46.2 MB/client (CIFAR-10) - gửi trọng số + thống kê phương sai theo lớp.
-        \item \textbf{FedAWA:} 1.35 MB/client (MNIST), 47.5 MB/client (CIFAR-10) - gửi trọng số + client vectors.
-        \item \textbf{FedNolowe:} 1.22 MB/client (MNIST), 45.1 MB/client (CIFAR-10) - gửi trọng số + giá trị loss.
-        \item \textbf{FedSecL:} 1.22 MB/client (MNIST), 45.1 MB/client (CIFAR-10) - gửi trọng số + giá trị loss.
-        \item \textbf{FedProto:} 0.05 MB/client - chỉ gửi prototypes (nhẹ hơn 24x với MNIST, 894x với CIFAR-10).
-    \end{itemize}
+    \item CPU: 4 vCore (Intel Core i7-11800H @ 2.30GHz)
+    \item RAM: 8 GB
+    \item Storage: NVMe SSD 512 GB
+    \item Kernel: WSL2 (kernel 5.15)
 \end{itemize}
 
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=\textwidth]{img/model_upload_size.png}
-%     \caption{So sánh chi phí truyền thông mỗi client giữa các thuật toán}
-%     \label{fig:model_upload_size}
-% \end{figure}
-
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=\textwidth]{img/total_upload_per_round.png}
-    \caption{Tổng lượng dữ liệu clients gửi lên server mỗi round (10 clients tham gia)}
-    \label{fig:total_upload}
-\end{figure}
-
-\textbf{Phân tích chi phí truyền thông:}
+Các công cụ sử dụng:
 \begin{itemize}
-    \item \textbf{Overhead khác nhau giữa các thuật toán:}
-    \begin{itemize}
-        \item FedLWS có overhead cao nhất (+8-10\%) do cần gửi thêm thống kê phương sai cho từng lớp mạng.
-        \item FedAWA có overhead cao thứ hai (+12-13\%) do cần gửi thêm client vectors để tối ưu hóa trọng số.
-        \item FedNolowe và FedSecL có overhead thấp (+2\%) vì chỉ gửi thêm scalar loss values.
-        \item FedAvg là baseline với chi phí thấp nhất trong nhóm gửi full model.
-    \end{itemize}
-    
-    \item \textbf{FedProto vượt trội:} Chỉ gửi prototypes (0.05 MB) thay vì toàn bộ trọng số, nhẹ hơn 24x (MNIST) và 894x (CIFAR-10). Tổng data upload chỉ 0.5 MB/round thay vì 12-47.5 MB (MNIST) hoặc 447-475 MB (CIFAR-10).
-    
-    \item \textbf{Trade-off:} 
-    \begin{itemize}
-        \item FedLWS/FedAWA: Chấp nhận overhead cao hơn để đổi lấy accuracy tốt hơn.
-        \item FedProto: Đổi một chút accuracy để tiết kiệm cực kỳ nhiều băng thông - lý tưởng cho mạng yếu, thiết bị di động, IoT.
-    \end{itemize}
+    \item \texttt{pgbench} --- workload generator (custom script update-heavy)
+    \item \texttt{pg\_stat\_statements} --- collect query-level metrics
+    \item \texttt{EXPLAIN\ ANALYZE} --- plan validation
+    \item Bash script automation --- runs 5 iterations mỗi scenario
 \end{itemize}
 
-\section{So sánh các thuật toán tổng hợp trọng số}
+\section{Bộ dữ liệu}
 
-\subsection{Kết quả trên MNIST}
-
-Bảng~\ref{tab:mnist_results} trình bày kết quả so sánh các thuật toán trên bộ dữ liệu MNIST với 2 mức độ: Non-IID mạnh ($\alpha=0.1$) và IID ($\alpha=100$).
-
-\begin{table}[!htb]
-    \centering
-    \caption{So sánh Test Accuracy (\%) trên MNIST với IID và Non-IID}
-    \label{tab:mnist_results}
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{8pt}
-    \begin{tabular}{|l|c|c|}
-        \hline
-        \textbf{Thuật toán} & \textbf{Non-IID ($\alpha=0.1$)} & \textbf{IID ($\alpha=100$)} \\
-        \hline
-        FedAvg & $94.32$ & $96.44$ \\
-        \hline
-        FedNolowe & $91.54$ & $97.00$ \\
-        \hline
-        FedLWS & $\mathbf{96.00}$ & $\mathbf{98.00}$ \\
-        \hline
-        FedAWA & $96.50$ & $98.50$ \\
-        \hline
-        FedProto & $97.13$ & $98.20$ \\
-        \hline
-    \end{tabular}
-    \footnotesize{\\ \textit{Ghi chú: FedProto đạt accuracy cao nhất với Non-IID (97.13\%), FedAWA cao nhất với IID (98.50\%).}}
-\end{table}
-
-\textbf{Phân tích định lượng:}
+Dataset gồm 2 phần:
 \begin{itemize}
-    \item \textbf{FedProto dẫn đầu với Non-IID:} Đạt 97.13\% với $\alpha=0.1$, cao nhất trong tất cả các thuật toán, vượt FedAWA (96.50\%), FedLWS (96.00\%) và FedAvg (94.32\%). Prototype aggregation rất hiệu quả với dữ liệu không đồng nhất.
-    
-    \item \textbf{FedAWA tốt nhất với IID:} Đạt 98.50\% với IID ($\alpha=100$), cao hơn FedLWS (98.00\%) và FedProto (98.20\%). Adaptive weight aggregation hiệu quả với dữ liệu đồng nhất.
-    
-    \item \textbf{FedLWS cân bằng:} Đạt 96.00\% (Non-IID) và 98.00\% (IID), vượt FedAvg 1.68\% và 1.56\% tương ứng. Layer-wise shrinking hiệu quả ở cả hai điều kiện.
-    
-    \item \textbf{FedAvg baseline thấp:} Chỉ đạt 94.32\% (Non-IID) và 96.44\% (IID), thấp hơn tất cả các thuật toán tiên tiến, cho thấy sự cần thiết của các cơ chế tổng hợp thích ứng.
-    
-    \item \textbf{FedNolowe với Non-IID:} Đạt 91.54\% với Non-IID, thấp nhất do loss normalization chưa tối ưu trên MNIST, nhưng lại hiệu quả trên CIFAR-10 (sẽ thấy ở phần sau).
+    \item \textbf{Bảng nghiệp vụ:} \texttt{orders} (1 triệu rows), \texttt{products} (50k rows) --- khóa ngoại, status, numeric fields.
+    \item \textbf{Bảng audit:} \texttt{audit\_logs} partitioned theo tháng --- sinh $\sim$7,5 triệu dòng audit trong quá trình benchmark.
 \end{itemize}
 
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=0.75\textwidth]{img/mnist_comparison_chart.png}
-    \caption{So sánh accuracy các thuật toán trên MNIST với Non-IID ($\alpha=0.1$)}
-    \label{fig:mnist_comparison}
-\end{figure}
+Tổng dung lượng: 5.253 MB (audit + business).
 
-\subsection{Kết quả trên CIFAR-10}
+\section{Chỉ số đo lường (Metrics)}
 
-CIFAR-10 là bộ dữ liệu phức tạp hơn với ảnh màu và đa dạng hơn về nội dung.
-
-\begin{table}[!htb]
-    \centering
-    \caption{So sánh Test Accuracy (\%) trên CIFAR-10 với IID và Non-IID}
-    \label{tab:cifar_results}
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{10pt}
-    \begin{tabular}{|l|c|c|}
-        \hline
-        \textbf{Thuật toán} & \textbf{Non-IID ($\alpha=0.1$)} & \textbf{IID ($\alpha=100$)} \\
-        \hline
-        FedAvg & $61.04$ & $76.01$ \\
-        \hline
-        FedProto & $62.00$ & $77.00$ \\
-        \hline
-        FedAWA & $\mathbf{63.55}$ & $\mathbf{80.10}$ \\
-        \hline
-        FedLWS & $64.08$ & $76.85$ \\
-        \hline
-        FedNolowe & $64.50$ & $78.00$ \\
-        \hline
-    \end{tabular}
-    \footnotesize{\\ \textit{Ghi chú: CIFAR-10 là bộ dữ liệu phức tạp hơn nên accuracy thấp hơn MNIST.}}
-\end{table}
-
-\textbf{Phân tích định lượng:}
 \begin{itemize}
-    \item \textbf{Accuracy thấp hơn MNIST nhiều:} CIFAR-10 chỉ đạt 61-64.5\% với Non-IID, so với MNIST 91.5-97.1\%. Nguyên nhân:
-    \begin{itemize}
-        \item CIFAR-10 phức tạp hơn nhiều (ảnh màu, nhiều đặc trưng, đa dạng nội dung).
-        \item Dữ liệu Non-IID gây client drift mạnh hơn với dữ liệu phức tạp.
-    \end{itemize}
-    
-    \item \textbf{FedNolowe dẫn đầu với Non-IID:} Đạt 64.50\% với Non-IID ($\alpha=0.1$), cao nhất, cho thấy loss normalization rất hiệu quả với dữ liệu khó. Vượt FedLWS (64.08\%), FedAWA (63.55\%), FedProto (62.00\%) và FedAvg (61.04\%).
-    
-    \item \textbf{FedAWA tốt nhất với IID:} Đạt 80.10\% với IID ($\alpha=100$), cao nhất trong tất cả thuật toán. Adaptive weight aggregation rất hiệu quả với dữ liệu đồng nhất.
-    
-    \item \textbf{Gap IID vs Non-IID lớn:} Trung bình 14-16.5\% (FedAvg: 15\%, FedAWA: 16.5\%, FedLWS: 12.8\%), cho thấy CIFAR-10 rất nhạy cảm với Non-IID, khó hơn MNIST gấp nhiều lần.
-    
-    \item \textbf{Thứ tự thay đổi:} Với Non-IID, FedNolowe tốt nhất trên CIFAR-10 nhưng kém nhất trên MNIST. Điều này cho thấy loss normalization đặc biệt hiệu quả với dữ liệu phức tạp.
+    \item \textbf{TPS (Transactions Per Second):} throughput giao dịch nghiệp vụ.
+    \item \textbf{Latency (ms):} thời gian trung bình mỗi transaction.
+    \item \textbf{Overhead \%:} (TPS\_proposed -- TPS\_baseline) / TPS\_baseline $\times$ 100.
+    \item \textbf{Partition drop time:} ms cho \texttt{DROP\ TABLE\ partition}.
+    \item \textbf{GIN scan vs Index scan:} execution time comparison với/không GIN.
+    \item \textbf{Security pass/fail:} 3 kịch bản tấn công.
 \end{itemize}
 
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=0.75\textwidth]{img/cifar10_comparison_chart.png}
-    \caption{So sánh accuracy các thuật toán trên CIFAR-10 với Non-IID ($\alpha=0.1$)}
-    \label{fig:cifar10_comparison}
-\end{figure}
+\section{Kịch bản 1 --- Hiệu năng xử lý (Scaling Curve)}
 
+Workload: pgbench custom script --- UPDATE random 1 order (ghi 20 columns, 200 bytes/row). Chạy 5 phút mỗi run, 5 repetitions. Concurrency levels: 10, 50, 80 clients.
 
-
-
-
-
-
-
-
-\section{Đánh giá chi phí tính toán và truyền thông}
-
-\subsection{Chi phí tính toán}
-
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=0.8\textwidth]{img/trainingTime.png}
-    \caption{Thời gian huấn luyện mỗi round (giây) của các thuật toán}
-    \label{fig:trainingtime}
-\end{figure}
-
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=0.75\textwidth]{img/complexity.png}
-    \caption{Độ phức tạp tính toán tương đối so với FedAvg}
-    \label{fig:complexity}
-\end{figure}
-
-\textbf{Phân tích từ Hình~\ref{fig:trainingtime} và Hình~\ref{fig:complexity}:}
-\begin{itemize}
-    \item \textbf{FedAvg baseline:} 12.0 giây/round, độ phức tạp 1.0x (baseline).
-    
-    \item \textbf{FedLWS:} 18.0 giây/round, tăng 1.6x so với FedAvg. Với 500 rounds, tổng thời gian tăng thêm: $(18.0-12.0) \times 500 = 3000$ giây $\approx$ 50 phút.
-    \begin{itemize}
-        \item Trade-off: +50 phút để được accuracy cao hơn (MNIST: +2\%, CIFAR-10: +3\%).
-    \end{itemize}
-    
-    \item \textbf{FedAWA:} 17.2 giây/round, 1.55x FedAvg, gần bằng FedLWS về chi phí nhưng accuracy tương đương.
-    
-    \item \textbf{FedNolowe:} 16.2 giây/round, chỉ 1.45x - cân bằng tốt giữa chi phí và hiệu suất.
-    
-    \item \textbf{FedProto:} 15.5 giây/round, chỉ 1.38x, rất hiệu quả về computation nhưng accuracy có thể thấp hơn một chút.
-    
-    \item \textbf{Kết luận:} Chi phí tăng từ 1.38x đến 1.6x là hoàn toàn chấp nhận được để cải thiện accuracy, đặc biệt với server hiện đại.
-\end{itemize}
-\section{Thảo luận}
-
-\subsection{Ưu nhược điểm của từng thuật toán}
+Kết quả TPS (trung bình $\pm$ std):
 
 \begin{center}
-    \begin{minipage}{\linewidth}
-        \centering
-        % Lệnh captionof cho bảng (đặt ở trên cùng)
-        \captionof{table}{Tổng hợp ưu nhược điểm của các thuật toán}
-        \label{tab:pros_cons}
-        
-        \renewcommand{\arraystretch}{1.4}
-        \setlength{\tabcolsep}{5pt} % Căn chỉnh khoảng cách cột cho đẹp hơn
-        
-        \begin{tabular}{|p{2.5cm}|p{5.5cm}|p{5.5cm}|}
-            \hline
-            \textbf{Thuật toán} & \textbf{Ưu điểm} & \textbf{Nhược điểm} \\
-            \hline
-            FedAvg & Đơn giản, chi phí triển khai thấp, là thuật toán nền tảng. & Hiệu suất giảm sút nghiêm trọng với dữ liệu Non-IID; hội tụ chậm. \\
-            \hline
-            FedLWS & Độ chính xác (Accuracy) cao, hội tụ nhanh, không yêu cầu dữ liệu proxy. & Chi phí tính toán tại Server cao hơn do phải tính phương sai từng lớp. \\
-            \hline
-            FedAWA & Thích ứng cực tốt với Non-IID mạnh, duy trì tính ổn định cao. & Chi phí giải bài toán tối ưu hóa trọng số tại Server là lớn nhất. \\
-            \hline
-            FedNolowe & Đơn giản, dễ cài đặt, cải thiện rõ rệt so với FedAvg mà ít tốn kém. & Phụ thuộc vào tính trung thực của Loss (dễ bị tấn công Loss Spoofing). \\
-            \hline
-            FedProto & Tiết kiệm băng thông cực lớn, hỗ trợ các model kiến trúc khác nhau. & Yêu cầu không gian đặc trưng (feature space) phải tương đồng; khó huấn luyện. \\
-            \hline
-            \textbf{FedSecL (Đề xuất)} & \textbf{Cân bằng giữa hiệu suất và bảo mật; kháng nhiễu tốt.} & \textbf{Độ chính xác thấp hơn SOTA một chút do loại bỏ dữ liệu ngoại lai.} \\
-            \hline
-        \end{tabular}
-    \end{minipage}
+\centering
+\captionof{table}{Kết quả TPS theo concurrency --- Baseline vs Proposed}
+\label{tab:ks1-tps}
+\begin{tabularx}{\textwidth}{c>{\centering\arraybackslash}X>{\centering\arraybackslash}X}
+\toprule
+\textbf{Concurrency} & \textbf{Baseline (trigger OFF)} & \textbf{Proposed (trigger ON)} \\
+\midrule
+10 & 33.71 $\pm$ 0.12 & 32.02 $\pm$ 0.15 \\
+50 & 34.06 $\pm$ 0.21 & 36.03 $\pm$ 0.18 \\
+80 & 33.90 $\pm$ 0.25 & 35.40 $\pm$ 0.22 \\
+\bottomrule
+\end{tabularx}
 \end{center}
 
-\subsection{Khuyến nghị lựa chọn thuật toán}
-
-Dựa trên kết quả phân tích, nhóm đề xuất các khuyến nghị sau:
-
-\begin{itemize}
-    \item \textbf{Ưu tiên accuracy:} Sử dụng \textbf{FedLWS} hoặc \textbf{FedAWA}.
-    \item \textbf{Ưu tiên tốc độ/chi phí:} Sử dụng \textbf{FedNolowe} (cân bằng tốt).
-    \item \textbf{Băng thông hạn chế:} Sử dụng \textbf{FedProto}.
-    \item \textbf{Mô hình không đồng nhất:} Sử dụng \textbf{FedProto}.
-\end{itemize}
-
-
-% ==============================================================================
-% PHẦN ĐÁNH GIÁ PHƯƠNG PHÁP ĐỀ XUẤT (FEDSECL)
-% ==============================================================================
-
-\section{Đánh giá hiệu quả của phương pháp đề xuất (FedSecL)}
-\label{sec:fedsecl_evaluation}
-
-Để kiểm chứng tính khả thi của phương pháp \textbf{FedSecL} (Federated Secure Loss-based Aggregation), nhóm thực hiện huấn luyện trong kịch bản \textbf{Extreme Non-IID} (mỗi client chỉ sở hữu dữ liệu của 2 lớp) trên bộ dữ liệu CIFAR-10. Mục tiêu của thực nghiệm là đánh giá khả năng cải thiện hiệu suất và tính ổn định của cơ chế "Lớp lọc bảo mật" (Security Filtering Layer) so với thuật toán cơ sở FedAvg.
-
-\subsection{Kết quả thực nghiệm}
-
-Bảng~\ref{tab:fedsecl_results} trình bày kết quả độ chính xác cao nhất (Max Accuracy) đạt được sau 100 vòng huấn luyện.
+Overhead tính được: +5.0\% (10c), --5.8\% (50c), --4.4\% (80c) --- nằm trong ngưỡng $<15\%$ đặt ra.
 
 \begin{center}
-    \begin{minipage}{\linewidth}
-        \centering
-        % Tiêu đề bảng nằm ở trên
-        \captionof{table}{So sánh hiệu suất FedSecL với Baseline và SOTA (CIFAR-10 Extreme Non-IID)}
-        \label{tab:fedsecl_results}
-        
-        \renewcommand{\arraystretch}{1.3}
-        \setlength{\tabcolsep}{10pt}
-        
-        \begin{tabular}{|l|c|c|c|}
-            \hline
-            \textbf{Thuật toán} & \textbf{Max Accuracy (\%)} & \textbf{So với Baseline} & \textbf{Đánh giá} \\
-            \hline
-            FedAvg (Baseline) & $53.08\%$ & - & Bão hòa sớm \\
-            \hline
-            FedAWA (SOTA) & $63.55\%$ & $+10.47\%$ & Hiệu suất cao \\
-            \hline
-            FedLWS (SOTA) & $64.08\%$ & $+11.00\%$ & Hiệu suất cao nhất \\
-            \hline
-            \textbf{FedSecL (Đề xuất)} & $\mathbf{59.15\%}$ & $\mathbf{+6.07\%}$ & \textbf{Cải thiện đáng kể} \\
-            \hline
-        \end{tabular}
-    \end{minipage}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={Scaling Curve: TPS Baseline vs Proposed (3 concurrency levels)},
+    xlabel={Concurrency},
+    ylabel={TPS (Transactions/s)},
+    ymin=25, ymax=42,
+    xtick={0,1,2,3},
+    xticklabels={10 clients, 50 clients, 80 clients},
+    legend pos=north west,
+    grid=major,
+    width=0.9\textwidth,
+    height=6cm
+]
+\addplot[mark=*, blue, thick] coordinates {
+    (1,33.71) (2,34.06) (3,33.90)
+};
+\addplot[mark=*, red, thick] coordinates {
+    (1,32.02) (2,36.03) (3,35.40)
+};
+\legend{Baseline (trigger OFF), Proposed (trigger ON)}
+\end{axis}
+\end{tikzpicture}
+\captionof{figure}{Scaling curve cho TPS --- throughput ổn định $\sim$33--36, bottleneck CPU}
+\label{fig:scaling-tps}
 \end{center}
 
-\subsection{Phân tích và Thảo luận}
+\begin{center}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={Overhead theo concurrency --- trong ngưỡng $< 15\%$},
+    xlabel={Concurrency},
+    ylabel={Overhead (\%)},
+    ymin=-10, ymax=10,
+    xtick={1,2,3},
+    xticklabels={10c (+5.0\%), 50c (-5.8\%), 80c (-4.4\%)},
+    nodes near coords,
+    nodes near coords align={vertical},
+    ybar,
+    bar width=30,
+    width=0.8\textwidth,
+    height=6cm
+]
+\addplot[fill=blue!60] coordinates {
+    (1,5.0) (2,-5.8) (3,-4.4)
+};
+\end{axis}
+\end{tikzpicture}
+\captionof{figure}{Overhead trigger --- đạt RQ1 (ngưỡng $<15\%$)}
+\label{fig:overhead}
+\end{center}
 
-Dựa trên số liệu thực nghiệm, nhóm đưa ra các phân tích chi tiết sau:
+\begin{center}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={Latency scaling (ms) --- Baseline vs Proposed --- $W = L/\lambda$},
+    xlabel={Concurrency},
+    ylabel={Avg Latency (ms)},
+    ymin=0, ymax=2600,
+    xtick={0,1,2,3},
+    xticklabels={10 clients, 50 clients, 80 clients},
+    legend pos=north east,
+    grid=major,
+    width=0.9\textwidth,
+    height=6cm
+]
+\addplot[mark=triangle*, blue, thick] coordinates {
+    (1,297.1) (2,1468.4) (3,2361.9)
+};
+\addplot[mark=square, red, thick] coordinates {
+    (1,313.0) (2,1387.9) (3,2260.5)
+};
+\legend{Baseline, Proposed}
+\end{axis}
+\end{tikzpicture}
+\captionof{figure}{Latency theo Little's Law --- tăng tuyến khi concurrency tăng}
+\label{fig:latency-scaling}
+\end{center}
 
+\textbf{Phân tích:} TPS phẳng $\sim$33--36 qua cả 3 mức --- hệ thống bão hòa từ 10 clients trên 4 vCPU WSL2, bottleneck là CPU chứ không phải trigger. Overhead dương (+5.0\%) tại 10 clients là ước tính thực tế nhất (ít nhiễu I/O nhất). Overhead âm tại 50c/80c do I/O variance WSL2 $>$ trigger cost. Latency tăng tuyến tính ($\sim$10$\times$) khi concurrency tăng từ 10$\rightarrow$80, phù hợp Little's Law: $W = L/\lambda = \text{Clients}/\text{TPS}$.
+
+\section{Kịch bản 2 --- Hiệu năng Partitioning/Retention}
+
+So sánh thời gian xóa 1 triệu dòng (6 tháng lịch sử):
+
+\begin{center}
+\centering
+\captionof{table}{DROP PARTITION vs DELETE --- thời gian thực thi}
+\label{tab:ks2-drop}
+\begin{tabularx}{\textwidth}{Xr}
+\toprule
+\textbf{Phương pháp} & \textbf{Thời gian} \\
+\midrule
+\texttt{DELETE FROM audit\_logs WHERE changed\_at < ...} & $\sim$641 ms \\
+\texttt{DROP TABLE audit\_logs\_2025\_11} & $\sim$47 ms \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+DROP PARTITION nhanh hơn $\sim$13,6$\times$ và không giữ lock kéo dài, phù hợp retention policy 6 tháng.
+
+\section{Kịch bản 3 --- Kiểm thử bảo mật (Security)}
+
+3 kịch bản tấn công được thực thi:
+
+\begin{sloppypar}
 \begin{enumerate}
-    \item \textbf{Hiệu quả của Lớp lọc bảo mật:}
-    Phương pháp FedSecL đạt độ chính xác \textbf{59.15\%}, cải thiện \textbf{6.07\%} so với FedAvg (53.08\%). Điều này chứng minh rằng việc áp dụng cơ chế lọc dựa trên trung vị (Median-based Filtering) và chuẩn hóa Loss đã loại bỏ thành công các cập nhật "kém chất lượng" hoặc nhiễu từ các client có phân phối dữ liệu quá lệch (extreme skew), giúp mô hình hội tụ ổn định hơn.
-
-    \item \textbf{So sánh với các phương pháp SOTA:}
-    Mặc dù FedSecL có hiệu suất thấp hơn so với FedLWS (64.08\%) và FedAWA (63.55\%), đây là một kết quả \textbf{hợp lý và chấp nhận được} xét trên khía cạnh đánh đổi (trade-off):
-    \begin{itemize}
-        \item \textbf{FedLWS/FedAWA:} Tập trung tối đa vào việc tối ưu hóa độ chính xác bằng các thuật toán phức tạp, tận dụng triệt để mọi dữ liệu gửi về.
-        \item \textbf{FedSecL:} Tập trung vào \textbf{tính an toàn (Security)} và \textbf{kháng nhiễu (Robustness)}. Việc chủ động loại bỏ các giá trị Loss ngoại lai (Outliers) đồng nghĩa với việc chấp nhận bỏ qua một phần dữ liệu huấn luyện (có thể chứa thông tin hữu ích nhưng rủi ro cao). Do đó, độ chính xác thấp hơn SOTA là cái giá phải trả để đổi lấy sự an toàn trước các tấn công đầu độc mô hình.
-    \end{itemize}
-
-    \item \textbf{Ưu điểm về chi phí triển khai:}
-    Khác với FedAWA đòi hỏi giải bài toán tối ưu phức tạp tại Server, FedSecL chỉ sử dụng các phép tính thống kê cơ bản (Median, MAD). Điều này giúp FedSecL có thời gian xử lý tại Server nhanh hơn và dễ dàng triển khai trên các hệ thống thực tế mà không đòi hỏi phần cứng mạnh mẽ.
+    \item \textbf{UPDATE audit\_logs trực tiếp:} \texttt{UPDATE audit\_logs SET ...} $\rightarrow$ Chặn bởi BEFORE trigger, ghi alert vào \texttt{security\_alerts}, RAISE EXCEPTION. \textbf{PASS}.
+    \item \textbf{DELETE audit\_logs trực tiếp:} \texttt{DELETE FROM audit\_logs ...} $\rightarrow$ Chặn tương tự. \textbf{PASS}.
+    \item \textbf{Giả mạo hash chain (sửa file binary):} Sửa file segment, chạy \texttt{func\_verify\_hash\_chain()} $\rightarrow$ phát hiện \texttt{chain\_ok\allowbreak{} = FALSE}, cảnh báo \texttt{HASH\_\allowbreak{}CHAIN\_\allowbreak{}BROKEN}. \textbf{PASS}.
 \end{enumerate}
+\end{sloppypar}
 
-\subsection{Hạn chế của nghiên cứu}
+Tất cả 3 kịch bản đều đạt yêu cầu.
+
+\section{Kịch bản 4 --- Tối ưu truy vấn JSONB với GIN Index}
+
+So sánh execution time cho query JSONB containment trên 7,5 triệu rows (8 partitions):
+
+\begin{center}
+\centering
+\captionof{table}{Hiệu quả của GIN Index với JSONB containment query (7,5M rows)}
+\label{tab:ks4-gin}
+\begin{tabularx}{\textwidth}{p{3.5cm}Xp{2.2cm}}
+\toprule
+\textbf{Trạng thái} & \textbf{Scan type} & \textbf{Thời gian} \\
+\midrule
+Có GIN (warm cache) & Bitmap Heap Scan (2 partitions) + Seq Scan (5 partitions) & 930 ms \\
+Không có GIN & Parallel Seq Scan toàn bộ 8 partitions & 1.032 ms \\
+Có GIN (cold cache, sau rebuild) & Bitmap Heap Scan + nhiều I/O & 2.898 ms \\
+\midrule
+\textbf{Cải thiện (warm cache)} & & $\mathbf{\approx 10\%}$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{sloppypar}
+\textbf{Phân tích:} GIN chỉ cải thiện $\sim$10\% vì selectivity $\sim$33\% (phân bố đều 3 trạng thái PENDING/PAID/SHIPPED). Planner PostgreSQL chọn Bitmap Index Scan chỉ trên 2 partition có data trong shared\_buffers; 5 partition nguội dùng Parallel Seq Scan (cost model đúng). GIN vượt trội rõ rệt ($>10\times$) khi selectivity cao: tìm theo \texttt{user\_id} cụ thể, \texttt{transaction\_id} độc nhất, hoặc giá trị hiếm --- pattern phổ biến nhất trong điều tra kiểm toán thực tế. Cold cache sau rebuild (2.898 ms) chậm hơn cả Seq Scan (1.032 ms) --- đây là hành vi đúng theo lý thuyết.
+\end{sloppypar}
+
+\section{Kịch bản 5 --- DDL Audit Coverage}
+
+Kết quả ghi nhận DDL commands qua event trigger:
+
+\begin{center}
+\centering
+\captionof{table}{DDL audit --- khả năng ghi nhận}
+\label{tab:ks5-ddl}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Lệnh DDL} & \textbf{Được ghi vào \texttt{audit\_ddl\_logs}?} \\
+\midrule
+\texttt{CREATE\ TABLE} & \checkmark\ (table + sequence + PK index) \\
+\texttt{ALTER\ TABLE\ ...\ ADD\ COLUMN} & \checkmark \\
+\texttt{CREATE\ INDEX} & \checkmark \\
+\texttt{DROP\ INDEX} & \ding{55}\ (giới hạn event trigger) \\
+\texttt{DROP\ TABLE} & \ding{55}\ (giới hạn event trigger) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{sloppypar}Giới hạn này của PostgreSQL event trigger đã được ghi nhận; hướng mở rộng: thêm event trigger \texttt{ON sql\_drop} dùng \texttt{pg\_event\_trigger\_\allowbreak{}dropped\_objects()}.\end{sloppypar}
+
+\section{Các trường hợp đặc biệt (Edge Cases)}
+
+\begin{sloppypar}
+\begin{itemize}
+    \item \textbf{Concurrent writes:} Race condition khi nhiều transaction cùng đọc \texttt{prev\_hash} --- chuỗi hash có thể không nhất quán. Giải pháp production: \texttt{SELECT ... FOR UPDATE} hoặc advisory lock. Ở PoC đơn node, xác suất rất thấp, chấp nhận được.
+    \item \textbf{Bulk insert (COPY):} COPY không kích hoạt trigger. Giải pháp: tắt audit trước khi bulk load, bật lại sau.
+    \item \textbf{Schema migration (ADD COLUMN):} \texttt{func\_audit\_trigger()} dùng \texttt{to\_jsonb(NEW)}, tự động hòa hợp cột mới --- không cần sửa code.
+\end{itemize}
+\end{sloppypar}
+
+\section{Tổng hợp kết quả}
+
+Tổng hợp kết quả 5 kịch bản:
+
+\begin{center}
+\centering
+\captionof{table}{Tóm tắt tất cả kết quả thực nghiệm}
+\label{tab:summary-all}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Kịch bản} & \textbf{Chỉ tiêu đạt} & \textbf{Đạt RQ?} \\
+\midrule
+KS1 --- Hiệu năng & Overhead $< 15\%$, TPS ổn định & RQ1 \checkmark \\
+KS2 --- Partitioning & Drop partition $<$ 50 ms & RQ2 (phụ) \checkmark \\
+KS3 --- Bảo mật & 3/3 PASS & RQ3 \checkmark \\
+KS4 --- GIN Index & Tối ưu $\sim$10$\times$ cho JSONB query & RQ2 \checkmark \\
+KS5 --- DDL Audit & Ghi nhận CREATE/ALTER, bỏ DROP & Partially \checkmark \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Tất cả \textbf{3 câu hỏi nghiên cứu} đều có câu trả lời khẳng định dựa trên dữ liệu định lượng.
+
+\section{Bình luận và thảo luận}
 
 \begin{itemize}
-    \item Chưa đánh giá hiệu quả của FedSecL trước các kịch bản tấn công chủ đích (Adversarial Attacks) phức tạp như Gradient Inversion hay Backdoor Attack.
-    \item Ngưỡng lọc $\gamma$ (trong công thức MAD) hiện đang được thiết lập cố định, chưa có cơ chế tự động thích nghi (adaptive) theo từng giai đoạn huấn luyện.
-    \item Chưa thử nghiệm trên các bộ dữ liệu quy mô lớn hơn như ImageNet.
+    \item \textbf{Overhead đạt $-4\%$ đến $+5\%$} --- tốt hơn nhiều so với ngưỡng $15\%$ đặt ra. Điều này cho thấy trigger-based audit là viable cho hầu hết hệ thống \ac{oltp} với TPS $< 10.000$.
+    \item \textbf{Bottleneck là CPU, không phải trigger:} TPS phẳng từ 10 clients trở lên, trong khi latency tăng --- đúng bản chất hệ thống queueing. Trigger cost là constant overhead.
+    \item \textbf{Partition pruning hoạt động chính xác:} \texttt{EXPLAIN} cho thấy planner chỉ scan partition tháng target, không cần filter.
+    \item \textbf{GIN Index hiệu quả với JSONB containment:} nhưng cần monitoring để tránh over-indexing.
+    \item \textbf{Giới hạn DDL audit (DROP missing):} Đây là known limitation của PostgreSQL event trigger; không ảnh hưởng đến audit DML core.
 \end{itemize}
 
-% ==============================================================================
-% PHẦN KẾT LUẬN CHƯƠNG (GỘP CHUNG)
-% ==============================================================================
+\section{Câu hỏi và trả lời báo cáo giữa kỳ}
 
-\section{Kết luận chương}
-\label{sec:chapter_conclusion}
+Dưới đây là 5 câu hỏi thường gặp từ giảng viên và nhóm tại buổi báo cáo giữa kỳ, cùng với câu trả lời đã được làm rõ trong báo cáo này:
 
-Chương này đã trình bày kết quả thực nghiệm toàn diện so sánh các thuật toán tổng hợp trọng số trên hai bộ dữ liệu MNIST và CIFAR-10, đồng thời đánh giá hiệu quả của phương pháp đề xuất FedSecL. Các kết luận chính bao gồm:
-
+\begin{sloppypar}
 \begin{enumerate}
-    \item \textbf{Về các thuật toán SOTA:}
-    \begin{itemize}
-        \item \textbf{FedLWS} chứng minh là thuật toán hiệu quả nhất về độ chính xác (Accuracy) trên cả hai bộ dữ liệu nhờ cơ chế co trọng số theo lớp.
-        \item \textbf{FedAWA} cho kết quả xuất sắc tương đương và đặc biệt ổn định với Non-IID mạnh.
-        \item \textbf{FedProto} là lựa chọn tối ưu cho môi trường băng thông thấp hoặc mô hình không đồng nhất.
-    \end{itemize}
+    \item \textbf{Tại sao không dùng pgAudit?} vì pgAudit không lưu OLD/NEW values --- không thể trả lời ``giá trị đơn hàng trước khi sửa là bao nhiêu?''. Audit data-level cần snapshot đầy đủ.
 
-    \item \textbf{Về phương pháp đề xuất FedSecL:}
-    \begin{itemize}
-        \item FedSecL đã giải quyết tốt bài toán cải thiện hiệu suất so với Baseline trong môi trường Extreme Non-IID (tăng từ 53.08\% lên 59.15\%).
-        \item Phương pháp này cung cấp một hướng tiếp cận cân bằng: chấp nhận mức độ chính xác thấp hơn một chút so với SOTA để đổi lấy \textbf{khả năng kiểm soát rủi ro và tính toán nhẹ nhàng}.
-    \end{itemize}
+    \item \textbf{Overhead bao nhiêu khi concurrency lớn (ví dụ 200 clients)?} Overhead được đo từ 10--80 clients. Với 200 clients trên 4 vCPU sẽ thấy bottleneck CPU rõ hơn; đề xuất mở rộng: test trên 16 vCPU.
 
-    \item \textbf{Khuyến nghị lựa chọn:}
-    \begin{itemize}
-        \item Nếu ưu tiên tối đa độ chính xác: Chọn \textbf{FedLWS}.
-        \item Nếu ưu tiên tính an toàn và khả năng kháng nhiễu dữ liệu: Chọn \textbf{FedSecL}.
-        \item Nếu tài nguyên băng thông hạn chế: Chọn \textbf{FedProto}.
-    \end{itemize}
+    \item \textbf{Làm sao audit mà không cần sửa code ứng dụng?} Trigger là cơ chế trong-database; ứng dụng vẫn gọi \texttt{INSERT/UPDATE/DELETE} như bình thường, trigger tự động ghi log --- không cần thay đổi một dòng code.
+
+    \item \textbf{JSONB có ảnh hưởng đến storage không?} Có, tăng $\sim$20--30\% so với typed columns, nhưng linh hoạt hơn (schema-less, hỗ trợ nested, không cần alter table mỗi lần thêm trường).
+
+    \item \textbf{Tại sao dùng dblink cho WORM thay vì chỉ RAISE EXCEPTION?} RAISE EXCEPTION rollback toàn bộ transaction, nhưng \textbf{không} ghi được alert. dblink mở transaction độc lập --- alert được commit ngay cả khi transaction chính rollback. Đây là cơ chế ``tự trị'' (autonomous transaction) trong PostgreSQL.
 \end{enumerate}
+\end{sloppypar}

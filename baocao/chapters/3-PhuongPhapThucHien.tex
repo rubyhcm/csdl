@@ -1,262 +1,330 @@
-Chương này trình bày phương pháp nghiên cứu được áp dụng để phân tích và đánh giá các thuật toán tổng hợp trọng số tiên tiến trong Federated Learning. Nghiên cứu tập trung vào việc so sánh hiệu quả của 5 thuật toán chính: FedAvg, FedLWS, FedAWA, FedNolowe và FedProto thông qua phân tích lý thuyết và kết quả thực nghiệm từ các công bố khoa học.
+\section{Xây dựng generic audit trigger function (PL/pgSQL)}
 
-\section{Phát biểu bài toán}
+Hàm trigger tổng quát \texttt{func\_audit\_trigger()} là thành phần trung tâm của toàn bộ hệ thống \cite{PG16Triggers}. Nó được thiết kế để có thể gắn vào \textbf{bất kỳ bảng nghiệp vụ nào} mà không cần viết lại logic:
 
-Trong môi trường Federated Learning, bài toán tổng hợp trọng số (Weight Aggregation) đóng vai trò then chốt trong việc kết hợp các cập nhật từ nhiều client để tạo ra mô hình toàn cầu tối ưu. Bài toán được phát biểu như sau:
+\begin{center}
+\captionof{listing}{Hàm trigger Audit Log chung (PL/pgSQL)}
+\label{lst:audit-trigger}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+CREATE OR REPLACE FUNCTION func_audit_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_table TEXT := TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME;
+BEGIN
+    -- session_user = the actual connecting user
+    -- (not affected by SECURITY DEFINER -- always equals app_user)
+    IF (TG_OP = 'DELETE') THEN
+        INSERT INTO audit_logs (table_name, operation, user_name, old_data)
+        VALUES (v_table, 'DELETE', session_user, to_jsonb(OLD));
+        RETURN OLD;
+    ELSIF (TG_OP = 'UPDATE') THEN
+        INSERT INTO audit_logs (table_name, operation, user_name, old_data, new_data)
+        VALUES (v_table, 'UPDATE', session_user, to_jsonb(OLD), to_jsonb(NEW));
+        RETURN NEW;
+    ELSIF (TG_OP = 'INSERT') THEN
+        INSERT INTO audit_logs (table_name, operation, user_name, new_data)
+        VALUES (v_table, 'INSERT', session_user, to_jsonb(NEW));
+        RETURN NEW;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path = public, pg_temp;
+\end{Verbatim}
+\end{center}
 
-\textbf{Đầu vào (Input):}
-\begin{itemize}
-    \item Hệ thống gồm $K$ clients, mỗi client $k$ có tập dữ liệu cục bộ $\mathcal{D}_k$ với kích thước $n_k$.
-    \item Mô hình toàn cầu ban đầu với tham số $w_t$ tại vòng giao tiếp thứ $t$.
-    \item Các cập nhật mô hình cục bộ $w_k^{t+1}$ sau khi client $k$ huấn luyện trên dữ liệu của mình.
-    \item Dữ liệu phân tán có tính chất Non-IID (không đồng nhất về phân phối).
-\end{itemize}
+\textbf{Luồng xử lý:} \texttt{app\_user} thực hiện DML (\texttt{INSERT/UPDATE/DELETE}) trên các bảng nghiệp vụ $\rightarrow$ AFTER ROW trigger gọi \texttt{func\_audit\_trigger()} $\rightarrow$ ghi vào \texttt{audit\_logs} (partitioned) với dữ liệu \texttt{old\_data/new\_data} dạng JSONB trong cùng transaction.
 
-\textbf{Đầu ra (Output):}
-\begin{itemize}
-    \item Mô hình toàn cầu cập nhật $w_{t+1}$ được tổng hợp từ các mô hình cục bộ.
-    \item Bộ trọng số tối ưu $\{\alpha_1, \alpha_2, ..., \alpha_K\}$ hoặc $\{\lambda_1, \lambda_2, ..., \lambda_K\}$ để kết hợp các cập nhật cục bộ.
-\end{itemize}
+\begin{center}
+\centering
+\includegraphics[width=0.8\textwidth]{img/mermaid/seq_audit_write.png}
+\captionof{figure}{Sơ đồ tuần tự: Luồng ghi Audit Log qua Trigger}
+\label{fig:seq-audit-write}
+\end{center}
 
-\textbf{Mục tiêu:}
-\begin{equation}
-    w_{t+1} = \sum_{k=1}^{K} \alpha_k w_k^{t+1}
-\end{equation}
+\section{Tự động hóa triển khai audit cho nhiều bảng (Dynamic Triggers)}
 
-Sao cho mô hình toàn cầu $w_{t+1}$ đạt được:
-\begin{enumerate}
-    \item Độ chính xác cao trên dữ liệu kiểm thử.
-    \item Khả năng hội tụ nhanh và ổn định.
-    \item Khả năng xử lý tốt dữ liệu Non-IID.
-\end{enumerate}
+Hệ thống sử dụng một hàm trigger duy nhất có thể gắn vào bất kỳ bảng nghiệp vụ nào:
 
-\section{Phương pháp nghiên cứu}
+\begin{center}
+\captionof{listing}{Tạo trigger cho bảng nghiệp vụ}
+\label{lst:create-trigger}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+CREATE TRIGGER trg_audit_orders
+AFTER INSERT OR UPDATE OR DELETE ON orders
+FOR EACH ROW EXECUTE FUNCTION func_audit_trigger();
 
-Đề tài áp dụng phương pháp nghiên cứu kết hợp giữa nghiên cứu tài liệu và phân tích so sánh dựa trên kết quả thực nghiệm từ các công bố khoa học.
+CREATE TRIGGER trg_audit_products
+AFTER INSERT OR UPDATE OR DELETE ON products
+FOR EACH ROW EXECUTE FUNCTION func_audit_trigger();
+\end{Verbatim}
+\end{center}
 
-\subsection{Nghiên cứu tài liệu}
+\textbf{Tiêu chí chọn bảng cần audit:} bảng chứa dữ liệu nhạy cảm (tài chính, nhân sự), bảng có nhiều actor khác nhau thực hiện thay đổi. \textbf{Cơ chế bật/tắt linh hoạt}:
 
-Quy trình nghiên cứu tài liệu được thực hiện theo các bước sau:
+\begin{center}
+\captionof{listing}{Bật/tắt trigger audit}
+\label{lst:enable-disable-trigger}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+-- Disable during bulk data load
+ALTER TABLE orders DISABLE TRIGGER trg_audit_orders;
+-- Re-enable after load
+ALTER TABLE orders ENABLE TRIGGER trg_audit_orders;
+\end{Verbatim}
+\end{center}
 
-\begin{enumerate}
-    \item \textbf{Thu thập tài liệu:}
-    \begin{itemize}
-        \item Tìm kiếm các bài báo khoa học từ các hội nghị và tạp chí uy tín: NeurIPS, ICML, ICLR, CVPR, AAAI.
-        \item Tập trung vào các công trình được công bố từ năm 2022 đến 2025.
-        \item Sử dụng các từ khóa: "Federated Learning", "Weight Aggregation", "Non-IID", "FedAvg", "FedLWS", "FedAWA", "FedNolowe", "FedProto".
-    \end{itemize}
-    
-    \item \textbf{Phân loại và lựa chọn:}
-    \begin{itemize}
-        \item Phân loại các thuật toán theo cơ chế tổng hợp: dựa trên kích thước dữ liệu, loss, gradient, prototype.
-        \item Lựa chọn 5 thuật toán đại diện: FedAvg (baseline), FedLWS, FedAWA, FedNolowe, FedProto.
-    \end{itemize}
-    
-    \item \textbf{Phân tích chuyên sâu:}
-    \begin{itemize}
-        \item Phân tích cơ sở toán học của từng thuật toán.
-        \item Xác định ưu điểm, nhược điểm và điều kiện áp dụng.
-        \item So sánh độ phức tạp tính toán và yêu cầu băng thông.
-    \end{itemize}
-\end{enumerate}
+\section{Tối ưu đường ghi (Write Path)}
 
-\subsection{Phân tích so sánh}
-
-Các thuật toán được so sánh dựa trên các tiêu chí sau:
-
-\begin{table}[ht]
-    \centering
-    \caption{Các tiêu chí so sánh thuật toán}
-    \label{tab:tieuchi}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|l|p{10cm}|}
-        \hline
-        \textbf{Tiêu chí} & \textbf{Mô tả} \\
-        \hline
-        Độ chính xác & Accuracy trên tập kiểm thử (test accuracy) \\
-        \hline
-        Tốc độ hội tụ & Số vòng giao tiếp (communication rounds) cần thiết để đạt accuracy mục tiêu \\
-        \hline
-        Độ ổn định & Phương sai của accuracy qua các vòng huấn luyện \\
-        \hline
-        Khả năng xử lý Non-IID & Hiệu suất với dữ liệu Non-IID (Dirichlet $\alpha = 0.1$) và IID ($\alpha = 100$) \\
-        \hline
-        Độ phức tạp tính toán & Chi phí tính toán trên server và client \\
-        \hline
-        Yêu cầu băng thông & Kích thước dữ liệu cần truyền giữa client và server \\
-        \hline
-    \end{tabular}
-\end{table}
-
-\section{Thiết kế thực nghiệm}
-
-Mặc dù đề tài này tập trung vào nghiên cứu lý thuyết và phân tích kết quả từ các công bố, nhóm mô tả thiết kế thực nghiệm chuẩn được sử dụng trong các nghiên cứu gốc để đánh giá các thuật toán.
-
-\subsection{Bộ dữ liệu}
-
-Các thuật toán được đánh giá trên hai bộ dữ liệu phổ biến:
+Các quyết định thiết kế nhằm tối thiểu hóa overhead:
 
 \begin{itemize}
-    \item \textbf{MNIST}~\cite{lecun1998mnist}: 
-    \begin{itemize}
-        \item 60,000 ảnh huấn luyện và 10,000 ảnh kiểm thử.
-        \item 10 lớp chữ số viết tay (0-9).
-        \item Kích thước ảnh: $28 \times 28$ pixels, grayscale.
-    \end{itemize}
-    
-
-    \item \textbf{CIFAR-10}~\cite{krizhevsky2009cifar}:
-    \begin{itemize}
-        \item 50,000 ảnh huấn luyện và 10,000 ảnh kiểm thử.
-        \item 10 lớp đối tượng (máy bay, ô tô, chim, mèo, v.v.).
-        \item Kích thước ảnh: $32 \times 32$ pixels, RGB.
-    \end{itemize}
+    \item \textbf{AFTER trigger, không phải BEFORE}: Trigger chạy sau khi hàng đã được ghi vào bảng nghiệp vụ, không block transaction chính.
+    \item \textbf{Ghi thẳng vào partition hot}: Dữ liệu log tháng hiện tại luôn ghi vào một partition đơn, tránh phân mảnh write.
+    \item \textbf{Không giữ lock phụ}: \texttt{func\_audit\_trigger} chỉ thực hiện một \texttt{INSERT} duy nhất --- không SELECT, không UPDATE.
+    \item \textbf{Synchronous logging (không batch/async):} Log được commit cùng transaction nghiệp vụ, đảm bảo atomicity --- nếu giao dịch thành công thì log chắc chắn tồn tại. Giải pháp async có cửa sổ mất log khi crash.
 \end{itemize}
 
-\subsection{Thiết lập phân phối Non-IID}
+\section{Quản lý vòng đời dữ liệu (Data Lifecycle)}
 
-Để mô phỏng tính không đồng nhất của dữ liệu trong thực tế, các nghiên cứu thường sử dụng phân phối Dirichlet để phân chia dữ liệu cho các client:
+\textbf{Retention policy:} Log được giữ 6 tháng trực tuyến (online) trong các partition. Sau 6 tháng, partition được archive rồi DROP.
 
-\begin{equation}
-    p_k \sim \text{Dir}(\alpha)
-\end{equation}
+\textbf{DROP PARTITION vs DELETE truyền thống:}
 
-Trong đó:
-\begin{itemize}
-    \item $p_k$ là phân phối lớp tại client $k$.
-    \item $\alpha$ là tham số điều khiển mức độ Non-IID:
-    \begin{itemize}
-        \item $\alpha = 0.1$: Non-IID mạnh - mỗi client có dữ liệu rất không đồng nhất, chỉ tập trung vào một vài lớp.
-        \item $\alpha = 100$: IID - phân phối đồng nhất, mỗi client có dữ liệu cân bằng từ tất cả các lớp.
-    \end{itemize}
-    \begin{itemize}
-        \item Khi $\alpha$ nhỏ, dữ liệu càng không đồng nhất (Non-IID mạnh).
-        \item Khi $\alpha$ lớn, dữ liệu càng đồng nhất (tiến đến IID).
-    \end{itemize}
-\end{itemize}
+\begin{center}
+\centering
+\captionof{table}{So sánh DROP PARTITION vs DELETE}
+\label{tab:drop-vs-delete}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Phương pháp} & \textbf{Thời gian (1M rows)} \\
+\midrule
+\texttt{DELETE\ FROM\ audit\_logs\ WHERE\ ...} & $\sim$641 ms \\
+\texttt{DROP\ TABLE\ audit\_logs\_YYYY\_MM} & $\sim$47 ms \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
-\subsection{Cấu hình thực nghiệm}
+DROP PARTITION nhanh hơn $\sim$13,6$\times$ và không giữ lock bảng kéo dài.
 
-Các tham số thực nghiệm chuẩn:
+\begin{center}
+\centering
+\includegraphics[width=\textwidth]{img/mermaid/partition_lifecycle.png}
+\captionof{figure}{Vòng đời phân vùng (Partition Lifecycle)}
+\label{fig:partition-lifecycle}
+\end{center}
 
-\begin{table}[ht]
-    \centering
-    \caption{Cấu hình thực nghiệm}
-    \label{tab:config}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabular}{|l|l|}
-        \hline
-        \textbf{Tham số} & \textbf{Giá trị} \\
-        \hline
-        Số lượng clients ($K$) & 100 \\
-        \hline
-        Tỷ lệ client tham gia ($C$) & 0.1 (10 clients/round) \\
-        \hline
-        Số epochs cục bộ ($E$) & 5 \\
-        \hline
-        Batch size ($B$) & 32 hoặc 64 \\
-        \hline
-        Learning rate ($\eta$) & 0.01 hoặc 0.001 \\
-        \hline
-        Số vòng giao tiếp & 200-500 rounds \\
-        \hline
-        Mô hình & CNN (2 conv layers + 2 FC layers) hoặc ResNet-18 \\
-        \hline
-    \end{tabular}
-\end{table}
-\section{Các độ đo và phương pháp đánh giá}
+\section{Cơ chế truy vấn/trích xuất log}
 
-\subsection{Độ đo hiệu suất}
+\textbf{Truy vấn theo bảng và thời gian:}
+\begin{center}
+\captionof{listing}{Truy vấn audit theo thời gian}
+\label{lst:query-time}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+SELECT operation, user_name, old_data->>'status' AS old_status,
+       new_data->>'status' AS new_status, changed_at
+FROM audit_logs
+WHERE table_name = 'public.orders'
+  AND changed_at >= '2026-03-01' AND changed_at < '2026-04-01'
+ORDER BY changed_at DESC LIMIT 50;
+\end{Verbatim}
+\end{center}
 
-\begin{itemize}
-    \item \textbf{Test Accuracy:} Độ chính xác trên tập kiểm thử, được tính bằng tỷ lệ phần trăm mẫu được phân loại đúng.
-    
-    \item \textbf{Communication Rounds:} Số vòng giao tiếp cần thiết để đạt được accuracy mục tiêu (ví dụ: 90\% accuracy).
-    
-    \item \textbf{Loss Value:} Giá trị hàm mất mát trung bình trên tập kiểm thử, phản ánh mức độ tự tin của mô hình.
-\end{itemize}
+\textbf{Truy vấn sâu vào JSONB (GIN index):}
+\begin{center}
+\captionof{listing}{Truy vấn JSONB với toán tử containment}
+\label{lst:query-jsonb}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+-- All orders shifted to PAID status
+SELECT id, user_name, old_data->>'status' AS old_status, changed_at
+FROM audit_logs
+WHERE table_name = 'public.orders'
+  AND new_data @> '{"status": "PAID"}';
+-- Uses idx_audit_new_data_gin
+\end{Verbatim}
+\end{center}
 
-\subsection{Độ đo chi phí}
+\section{DDL Audit via Event Trigger}
 
-\begin{itemize}
-    \item \textbf{Computation Cost:} Số lượng FLOPs (Floating Point Operations) cần thiết cho quá trình tổng hợp trên server.
-    
-    \item \textbf{Communication Cost:} Tổng kích thước dữ liệu (MB) cần truyền giữa clients và server trong toàn bộ quá trình huấn luyện.
-\end{itemize}
+Ngoài DML audit, hệ thống bổ sung \textbf{DDL audit} để ghi nhận mọi thay đổi schema (CREATE/ALTER/DROP) qua Event Trigger.
 
-\subsection{Phương pháp so sánh}
+\begin{center}
+\captionof{listing}{Hàm audit DDL với Event Trigger}
+\label{lst:ddl-audit}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+CREATE OR REPLACE FUNCTION func_audit_ddl()
+RETURNS event_trigger LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE cmd record;
+BEGIN
+    FOR cmd IN SELECT * FROM pg_event_trigger_ddl_commands() LOOP
+        INSERT INTO public.audit_ddl_logs
+            (command_tag, object_type, object_name, command_sql, user_name)
+        VALUES (
+            TG_TAG,
+            cmd.object_type,
+            cmd.object_identity,
+            cmd.command_tag || ' ' || COALESCE(cmd.object_identity, ''),
+            session_user
+        );
+    END LOOP;
+END;
+$$;
 
-Để đảm bảo tính công bằng, các thuật toán được so sánh trong cùng điều kiện:
-\begin{itemize}
-    \item Cùng kiến trúc mô hình.
-    \item Cùng bộ dữ liệu và cách phân chia Non-IID.
-    \item Cùng siêu tham số (learning rate, batch size, số epochs).
-    \item Chạy với nhiều random seeds khác nhau và lấy trung bình kết quả.
-\end{itemize}
+CREATE EVENT TRIGGER audit_ddl_trigger
+    ON ddl_command_end
+    EXECUTE FUNCTION func_audit_ddl();
+\end{Verbatim}
+\end{center}
 
-Kết quả được trình bày dưới dạng:
-\begin{itemize}
-    \item Bảng so sánh số liệu (mean $\pm$ standard deviation).
-    \item Đồ thị hội tụ (accuracy/loss theo communication rounds).
-    \item Phân tích định tính về ưu nhược điểm của từng phương pháp.
-\end{itemize}
+\textbf{Lưu ý:} Event \texttt{ddl\_command\_end} không trả về kết quả cho DROP commands --- vì khi event kích hoạt, đối tượng đã bị xóa khỏi catalog. Để bắt DROP, cần thêm event trigger riêng.
 
-\section{Môi trường nghiên cứu}
+\section{Phân quyền và mô hình SECURITY DEFINER}
 
-Nghiên cứu này được thực hiện dựa trên phân tích các kết quả thực nghiệm từ các công bố khoa học. Các thí nghiệm gốc thường được thực hiện trên:
+Hệ thống định nghĩa ba vai trò:
 
-\begin{itemize}
-    \item \textbf{Phần cứng:} 
-    \begin{itemize}
-        \item CPU: Intel Core i5-11400 (6-core, 12-thread).
-        \item GPU: NVIDIA GeForce RTX 3060 (12GB VRAM).
-        \item RAM: 16GB DDR4.
-    \end{itemize}
-    
-    \item \textbf{Phần mềm:}
-    \begin{itemize}
-        \item Ngôn ngữ: Python 3.8+.
-        \item Framework: PyTorch 1.10+ hoặc TensorFlow 2.x.
-        \item Thư viện FL: FedML, Flower, PySyft.
-    \end{itemize}
-    
-    \item \textbf{Công cụ phân tích:}
-    \begin{itemize}
-        \item Matplotlib, Seaborn cho visualization.
-        \item NumPy, Pandas cho xử lý dữ liệu.
-        \item Weights \& Biases (W\&B) hoặc TensorBoard cho tracking thí nghiệm.
-    \end{itemize}
-\end{itemize}
+\begin{center}
+\centering
+\captionof{table}{Mô hình phân quyền ba lớp}
+\label{tab:rbac}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Vai trò} & \textbf{Quyền trên bảng nghiệp vụ} & \textbf{Quyền trên audit\_logs} \\
+\midrule
+\texttt{app\_user} & SELECT, INSERT, UPDATE, DELETE & Không có \\
+\texttt{auditor} & Không có & SELECT \\
+\texttt{db\_admin} & ALL & ALL (owner) \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
-\section{Quy trình thực hiện nghiên cứu}
+\begin{sloppypar}\textbf{Hardening:} \texttt{SET search\_path = public, pg\_temp} được gắn vào mọi SECURITY DEFINER function để chống schema hijack attack.\end{sloppypar}
 
-Nghiên cứu được thực hiện theo các bước sau:
+\section{Immutability (Append-only/WORM) cho bảng audit}
+\label{sec:immutability}
 
-\begin{enumerate}
-    \item \textbf{Giai đoạn 1 - Nghiên cứu nền tảng (2 tuần):}
-    \begin{itemize}
-        \item Tìm hiểu cơ bản về Federated Learning và FedAvg.
-        \item Nghiên cứu các vấn đề của dữ liệu Non-IID.
-    \end{itemize}
-    
-    \item \textbf{Giai đoạn 2 - Nghiên cứu chuyên sâu (3 tuần):}
-    \begin{itemize}
-        \item Phân tích chi tiết các thuật toán FedLWS, FedAWA, FedNolowe, FedProto.
-    \end{itemize}
-    
-    \item \textbf{Giai đoạn 3 - Phân tích so sánh (2 tuần):}
-    \begin{itemize}
-        \item Thu thập kết quả thực nghiệm từ các bài báo.
-        \item Tổng hợp và so sánh hiệu suất của các thuật toán.
-    \end{itemize}
-    
-    \item \textbf{Giai đoạn 4 - Đề xuất phương pháp giải quyết các khoảng trống còn tồn tại (2 tuần):}
-    \begin{itemize}
-        \item Đề xuất hướng nghiên cứu tiếp theo.
-    \end{itemize}
+\textbf{Mục tiêu:} Biến \texttt{audit\_logs} thành bảng Write-Once-Read-Many (WORM) --- một khi row được ghi, không ai --- kể cả \texttt{db\_admin} --- có thể sửa hay xóa nó.
 
-    \item \textbf{Giai đoạn 5 - Tổng kết (1 tuần):}
-    \begin{itemize}
-        \item Rút ra kết luận về ưu nhược điểm của từng phương pháp.
-    \end{itemize}
-\end{enumerate}
+\begin{sloppypar}\textbf{Cơ chế:} Trigger \texttt{BEFORE UPDATE OR DELETE} trên \texttt{audit\_logs} gọi hàm \texttt{func\_prevent\_\allowbreak{}audit\_change()}. Điểm then chốt là sử dụng \texttt{dblink} để ghi alert trong \textbf{autonomous transaction} độc lập --- alert được commit ngay cả khi RAISE EXCEPTION rollback transaction cha:\end{sloppypar}
+
+\begin{center}
+\captionof{listing}{Hàm WORM: chặn sửa/xóa và ghi alert qua dblink autonomous transaction}
+\label{lst:worm-prevent}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+CREATE OR REPLACE FUNCTION func_prevent_audit_change()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_details JSONB;
+    v_sql     TEXT;
+BEGIN
+    v_details := jsonb_build_object('op', TG_OP, 'schema', TG_TABLE_SCHEMA);
+    IF (TG_OP = 'UPDATE') THEN
+        v_details := v_details || jsonb_build_object(
+            'old', to_jsonb(OLD), 'new', to_jsonb(NEW));
+    ELSIF (TG_OP = 'DELETE') THEN
+        v_details := v_details || jsonb_build_object('old', to_jsonb(OLD));
+    END IF;
+
+    -- Ghi alert trong transaction DOC LAP qua dblink
+    -- Alert nay duoc commit ngay ca khi RAISE EXCEPTION rollback transaction cha
+    v_sql := format(
+        'INSERT INTO security_alerts(action,table_name,user_name,details)
+         VALUES (%L,%L,%L,%L)',
+        'AUDIT_TAMPER_ATTEMPT', TG_TABLE_NAME, session_user, v_details::text
+    );
+    PERFORM dblink_exec(
+        'dbname=audit_poc host=localhost user=db_admin password=db_admin_pass',
+        v_sql);
+
+    RAISE EXCEPTION 'Audit log is immutable -- % on % denied (user: %)',
+        TG_OP, TG_TABLE_NAME, session_user;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+CREATE TRIGGER trg_protect_audit
+BEFORE UPDATE OR DELETE ON audit_logs
+FOR EACH ROW EXECUTE FUNCTION func_prevent_audit_change();
+\end{Verbatim}
+\end{center}
+
+\begin{center}
+\centering
+\includegraphics[width=\textwidth]{img/mermaid/seq_worm_dblink.png}
+\captionof{figure}{Sơ đồ tuần tự: Cơ chế WORM và dblink autonomous transaction}
+\label{fig:seq-worm-dblink}
+\end{center}
+
+\section{Tamper-evident logging (chuỗi băm SHA-256)}
+
+Immutability (§\ref{sec:immutability}) ngăn can thiệp qua SQL interface. Tuy nhiên, kẻ tấn công có quyền filesystem có thể sửa trực tiếp file dữ liệu PostgreSQL. Chuỗi băm SHA-256 giải quyết kịch bản này bằng cách tạo \textbf{bằng chứng toán học} không thể làm giả.
+
+\textbf{Nguyên lý} \cite{FIPS180-4}: Mỗi log row lưu hash của chính nó và hash của row ngay trước đó:
+
+\begin{center}
+\texttt{hash\_n = SHA256(prev\_hash\_{n-1} || table\_name|operation|user\_name|old\_data|new\_data|changed\_at)}
+\end{center}
+
+\begin{center}
+\captionof{listing}{Trigger hash chain (BEFORE INSERT)}
+\label{lst:hash-chain}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+-- Get prev_hash from the last row
+SELECT hash INTO v_prev FROM audit_logs
+WHERE table_name = NEW.table_name
+ORDER BY changed_at DESC, id DESC LIMIT 1;
+
+-- Build canonical payload (concatenate audit fields)
+v_payload := COALESCE(NEW.table_name, '')   || '|' ||
+             COALESCE(NEW.operation, '')    || '|' ||
+             COALESCE(NEW.user_name, '')    || '|' ||
+             COALESCE(NEW.old_data::text, '') || '|' ||
+             COALESCE(NEW.new_data::text, '') || '|' ||
+             COALESCE(NEW.changed_at::text, '');
+
+-- Compute hash: SHA256(prev_hash || payload)
+NEW.prev_hash := v_prev;
+NEW.hash := digest(COALESCE(v_prev, ''::bytea) || v_payload::bytea, 'sha256');
+\end{Verbatim}
+\end{center}
+
+\textbf{Quy trình kiểm tra:} Hàm \texttt{func\_verify\_hash\_chain(p\_table\ TEXT)} duyệt log theo thứ tự \texttt{(changed\_at,\ id)}, tính lại hash từng row và so sánh với \texttt{hash} đã lưu.
+
+\section{Chiến lược tối ưu hóa truy vấn (Query Optimization)}
+
+\textbf{Nguyên tắc 1 --- Luôn kèm điều kiện thời gian (\texttt{changed\_at}):}
+\textbf{Phân tích EXPLAIN:}
+\begin{center}
+\captionof{listing}{Phân tích EXPLAIN --- partition pruning}
+\label{lst:explain-pruning}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+EXPLAIN ANALYZE
+SELECT * FROM audit_logs
+WHERE table_name = 'orders'
+  AND changed_at >= '2026-04-01' AND changed_at < '2026-05-01';
+-- Only scans partition audit_logs_2026_04
+\end{Verbatim}
+\end{center}
+
+\textbf{Nguyên tắc 2 --- Dùng toán tử containment \texttt{@>} cho GIN:}
+\textbf{Truy vấn JSONB tận dụng GIN index:}
+\begin{center}
+\captionof{listing}{Truy vấn JSONB tận dụng GIN index}
+\label{lst:query-gin}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize, numbers=left, numbersep=5pt, breaklines]
+SELECT * FROM audit_logs
+WHERE new_data @> '{"status": "PAID"}';
+-- Uses idx_audit_new_data_gin
+\end{Verbatim}
+\end{center}
+
+\section{Giám sát và cảnh báo (Alerting)}
+
+\begin{sloppypar}Trigger \texttt{func\_prevent\_audit\_change()} gọi \texttt{dblink\_exec()} để INSERT vào \texttt{security\_alerts} trong transaction độc lập. Việc này đảm bảo mọi nỗ lực can thiệp đều để lại dấu vết vĩnh viễn.\end{sloppypar}
+
+\begin{center}
+\centering
+\includegraphics[width=0.55\textwidth]{img/mermaid/security_3layer.png}
+\captionof{figure}{Kiến trúc bảo mật ba lớp}
+\label{fig:security-3layer}
+\end{center}
+
+\textbf{Lớp 1 --- Phân quyền:} \texttt{app\_user} không có quyền trực tiếp trên \texttt{audit\_logs}. \textbf{Lớp 2 --- Immutability:} Trigger chặn UPDATE/DELETE, RAISE EXCEPTION đồng thời ghi alert qua dblink. \textbf{Lớp 3 --- Tamper-evident:} Hash chain SHA-256 phát hiện can thiệp ở tầng file system.

@@ -1,7 +1,7 @@
 # KẾ HOẠCH UPDATE THƯ MỤC `baocao/` CHO ĐỀ TÀI AUDIT LOG POSTGRESQL
 
 **Đề tài mới:** *Nghiên cứu và xây dựng hệ thống Audit Log hiệu năng cao trên PostgreSQL sử dụng Partitioning và JSONB*
-**Sinh viên thực hiện:** Nguyễn Đình Lợi — loindp@ttcagris.com.vn
+**Sinh viên thực hiện:** Nguyễn Đăng Phúc Lợi — phucloi.dev@gmail.com
 **Ngày lập kế hoạch:** 02/05/2026
 **Phạm vi:** Thay toàn bộ nội dung Federated Learning trong `baocao/` bằng nội dung PostgreSQL Audit Log từ `6-baocao.md` + sơ đồ trong `sodo-baocao.md` + code thực tế trong `sql/`, `bench/`, `verify/`, `scripts/`.
 
@@ -12,8 +12,8 @@
 | Hạng mục | Hiện trạng `baocao/` | Yêu cầu mới |
 |---|---|---|
 | Tên đề tài | "Tìm hiểu các thuật toán tổng hợp trọng số trong Federated Learning" | "Nghiên cứu và xây dựng hệ thống Audit Log hiệu năng cao trên PostgreSQL …" |
-| Tác giả | 3 thành viên (Cường/Minh/Lợi — nhóm FL) | 1 sinh viên (Nguyễn Đình Lợi) |
-| Môn học | "An toàn bảo mật hệ thống thông tin" | Giữ nguyên (đề tài thuộc đúng môn) |
+| Tác giả | 3 thành viên (Cường/Minh/Lợi — nhóm FL) | 1 sinh viên (Nguyễn Đăng Phúc Lợi) |
+| Môn học | "Cơ sở dữ liệu nâng cao" | Giữ nguyên (đề tài thuộc đúng môn) |
 | Cấu trúc chương | 5 chương (FL-flavored) | 5 chương (Audit Log-flavored) — mapping ở §2 |
 | Bibliography | 18 entry FL/ML | ~10 entry PostgreSQL/Audit + giữ ISO 27002 nếu liên quan |
 | Acronyms | ML/AI/FL | DML/DDL/DBMS/JSONB/WORM/GIN/SHA/TPS/CDC/SIEM/PoC/SOX/PCI-DSS |
@@ -25,7 +25,7 @@
 ## 1. Nguyên tắc chung & Quyết định kỹ thuật
 
 1. **Giữ nguyên `template/thesis.cls`** và toàn bộ layout (geometry/font/biblio engine). Không thay class — chỉ thay nội dung.
-2. **Single-author**: cập nhật `\Author{...}{...}` thành 1 dòng duy nhất "NGUYỄN ĐÌNH LỢI — MSHV/MSSV"; xóa `team_info.tex` (hoặc đơn giản hóa thành thông tin 1 người, bỏ ảnh vì chưa có).
+2. **Single-author**: cập nhật `\Author{...}{...}` thành 1 dòng duy nhất "Nguyễn Đăng Phúc Lợi — MSHV/MSSV"; xóa `team_info.tex` (hoặc đơn giản hóa thành thông tin 1 người, bỏ ảnh vì chưa có).
 3. **Render Mermaid → PNG/PDF**: dùng `mermaid-cli` (`npm i -g @mermaid-js/mermaid-cli`) để xuất 6 sơ đồ trong `sodo-baocao.md` ra `baocao/img/*.pdf`. Lý do chọn PDF thay vì PNG: vector, không vỡ khi zoom trong báo cáo.
 4. **Biểu đồ benchmark (kịch bản 1 — scaling curve)**: vẽ bằng TikZ/pgfplots trực tiếp trong .tex để tận dụng dữ liệu số (3 mức concurrency × 3 runs) — chính xác hơn xychart-beta của Mermaid và đẹp hơn khi in.
 5. **Code SQL**: dùng môi trường `lstlisting` hoặc `minted` (cần shell-escape) — đề xuất `lstlisting` với style PL/pgSQL custom để tránh dependency Python/Pygments.
@@ -63,11 +63,11 @@ Patch vào `baocao/main.tex`:
 \Title{Nghiên cứu và xây dựng hệ thống Audit Log hiệu năng cao trên PostgreSQL sử dụng Partitioning và JSONB}
 \Title[en]{Research and Implementation of a High-Performance Audit Log System on PostgreSQL using Partitioning and JSONB}
 
-\Author{NGUYỄN ĐÌNH LỢI}{<MSHV>}    % bỏ 2 \Author cũ
+\Author{Nguyễn Đăng Phúc Lợi}{250202012}    % bỏ 2 \Author cũ
 
-\Degree{MÔN: AN TOÀN BẢO MẬT HỆ THỐNG THÔNG TIN}
+\Degree{MÔN: CƠ SỞ DỮ LIỆU NÂNG CAO}
 \ThesisYear{2026}
-\Supervisor{PGS TS. Nguyễn Tấn Cầm}   % giữ nguyên nếu cùng giảng viên
+\Supervisor{TS. Nguyễn Gia Tuấn Anh}   % giữ nguyên nếu cùng giảng viên
 
 \hypersetup{
     pdfauthor={Nguyen Dinh Loi},
@@ -235,19 +235,32 @@ Sử dụng: `\begin{lstlisting}[caption={...},label=lst:...]...\end{lstlisting}
 
 ## 8. Checklist hoàn thành
 
-- [ ] `main.tex` compile sạch, PDF có metadata đúng (title/author)
-- [ ] Trang bìa hiển thị đúng tên đề tài + 1 sinh viên
-- [ ] `abstract.tex` chứa abstract Audit Log + từ khóa
-- [ ] `1-MoDau.tex` đủ 5 section (mô tả/đặt vấn đề/mục tiêu/đóng góp/bố cục)
-- [ ] 6 sơ đồ Mermaid đã render thành PDF và chèn đúng vị trí
-- [ ] 3 biểu đồ TikZ scaling curve render chính xác số liệu KS1
-- [ ] 4 hàm PL/pgSQL chính (`func_audit_trigger`, `func_prevent_audit_change`, `func_audit_hash_chain`, `func_audit_ddl`) có lstlisting
-- [ ] Bảng 1.1, 2.1, 5.1–5.8 chuyển sang `tabularx` đầy đủ
-- [ ] 5 Q&A báo cáo giữa kỳ có trong `4-ThucNghiemDanhGia.tex`
-- [ ] Phụ lục A–D xuất hiện sau bibliography
-- [ ] Bibliography in 8–10 reference, không còn entry FL
-- [ ] Không còn ảnh FL nào được tham chiếu trong `.tex`
-- [ ] PDF cuối ≤ 60 trang (chuẩn báo cáo môn học)
+> **Trạng thái review (2026-05-03):** Implementation hoàn tất. Các mục ✅ đã verify qua đọc file thực tế. Các lỗi tìm thấy đã được fix trực tiếp.
+
+- [x] `main.tex` compile sạch, PDF có metadata đúng (title/author)
+- [x] Trang bìa hiển thị đúng tên đề tài + 1 sinh viên — `\Author{Nguyễn Đăng Phúc Lợi}{250202012}` (cần điền MSHV thực)
+- [x] `abstract.tex` chứa abstract Audit Log + từ khóa (dùng `\ac{}` cho OLTP, TPS)
+- [x] `1-MoDau.tex` đủ 6 section: Lý do chọn → Bài toán → Mục tiêu → RQ → Đóng góp → Bố cục (**đã fix**: bố cục phản ánh đúng 5 chương thực tế)
+- [x] 6 sơ đồ Mermaid render thành **PNG** (không phải PDF như plan đề xuất) tại `img/mermaid/` và chèn đúng vị trí
+- [x] 3 biểu đồ TikZ scaling curve render chính xác số liệu KS1 (pgfplots trong `4-ThucNghiemDanhGia.tex`)
+- [x] 4 hàm PL/pgSQL có listing: `func_audit_trigger`, `func_audit_ddl`, hash chain snippet, `func_prevent_audit_change` (**đã thêm** listing WORM vào `3-PhuongPhapThucHien.tex`)
+- [x] Bảng chuyển sang `tabularx`: Tab.1.1 so sánh giải pháp, Tab.2.1 trade-offs, Tab.5.1–5.8 thực nghiệm
+- [x] 5 Q&A báo cáo giữa kỳ có trong `4-ThucNghiemDanhGia.tex` (section cuối)
+- [x] Phụ lục A–D xuất hiện sau bibliography (uncommented trong `main.tex`)
+- [x] Bibliography 9 entry PostgreSQL/Audit, không còn entry FL
+- [x] Không còn ảnh FL nào được tham chiếu trong `.tex`
+- [ ] PDF cuối ≤ 60 trang — chưa verify (cần build và đếm trang)
+- [ ] `<MSHV>` placeholder cần điền MSHV thực của sinh viên
+
+### Lỗi đã fix trong review (2026-05-03)
+
+| Vấn đề | File | Hành động |
+|---|---|---|
+| `func_prevent_audit_change()` code bị thiếu | `3-PhuongPhapThucHien.tex` §Immutability | Thêm listing đầy đủ (31 dòng) |
+| Typo "Immutzability" | `3-PhuongPhapThucHien.tex` dòng 220 | Sửa thành "Immutability" |
+| KS4 GIN data sai (32 ms vs 285 ms — fabricated) | `4-ThucNghiemDanhGia.tex` §KS4 | Thay bằng số thực (930 ms warm vs 1.032 ms no-GIN) + thêm cold cache (2.898 ms) |
+| RQ2 answer "7× đến 10×" mâu thuẫn dữ liệu thực | `5-KetLuanPhatTrien.tex` | Sửa thành "~10% warm cache; >10× khi selectivity cao" |
+| Bố cục mô tả Ch4 "An toàn/Bảo mật" là chương riêng (đã gộp vào Ch3) | `1-MoDau.tex` | Cập nhật bố cục 5 chương khớp với `main.tex` thực tế |
 
 ---
 
@@ -260,7 +273,7 @@ Sử dụng: `\begin{lstlisting}[caption={...},label=lst:...]...\end{lstlisting}
 | `lstlisting` xử lý ký tự `$$` của PL/pgSQL không đẹp | Trung bình | Dùng `escapechar=|` hoặc bọc trong `verbatim`; hoặc chuyển sang `minted` với `-shell-escape` |
 | Compile lỗi do encoding tiếng Việt khi copy từ `.md` | Thấp | Đảm bảo file `.tex` lưu UTF-8 không BOM; class hiện đã có `utf8` |
 | 60 trang vượt quá giới hạn báo cáo môn | Trung bình | Cô đọng §1.5 (công trình liên quan), bỏ lặp giữa §3.x và §4.x; gộp một số bảng nhỏ |
-| Không có MSHV của tác giả | Thấp | Hỏi sinh viên để điền `\Author{NGUYỄN ĐÌNH LỢI}{<MSHV>}` |
+| Không có MSHV của tác giả | Thấp | Hỏi sinh viên để điền `\Author{Nguyễn Đăng Phúc Lợi}{250202012}` |
 
 ---
 

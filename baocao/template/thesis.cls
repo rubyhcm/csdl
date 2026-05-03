@@ -1,6 +1,6 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{template/thesis}[2024/04/16 v2.0.0 UIT Thesis Template by LuanVT]
-\LoadClass[12pt]{report}
+\LoadClass[11pt]{report}
 
 % Core packages
 \RequirePackage[utf8]{inputenc}
@@ -56,7 +56,7 @@
 \RequirePackage{multido}
 \RequirePackage{etoolbox}
 
-\RequirePackage{times,latexsym,bbm,rotating}
+\RequirePackage{latexsym,bbm,rotating}
 \RequirePackage{enumitem,hhline,stmaryrd,bussproofs,arydshln}
 \usetikzlibrary{calc}
 \RequirePackage{lipsum}
@@ -110,7 +110,8 @@
 
 \RequirePackage{acro,tabularray}
 \acsetup{
-    list/template=tabularray
+    list/template=tabularray,
+    patch/longtable=false
 }
 \input{abbrev}
 

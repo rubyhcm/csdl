@@ -1,0 +1,38 @@
+flowchart TD
+    App(["Ứng dụng (app_user)"])
+
+    BT[("Bảng nghiệp vụ\norders · products")]
+
+    AT["① func_audit_trigger()\nAFTER ROW · SECURITY DEFINER\nsession_user + OLD/NEW → JSONB"]
+
+    HC["② func_audit_hash_chain()\nBEFORE INSERT\nSHA-256(prev_hash ‖ payload)"]
+
+    AL[("③ audit_logs\nJSONB · Partitioned by Month\nappend-only · GIN Index")]
+
+    WT["④ func_prevent_audit_change()\nBEFORE UPDATE/DELETE — WORM\nRAISE EXCEPTION"]
+
+    SA[("⑤ security_alerts\nautonomous commit via dblink")]
+
+    DDL_LOG[("⑥ audit_ddl_logs\nEvent Trigger ON ddl_command_end\nCREATE / ALTER schema")]
+
+    SIEM[/"Monitoring / SIEM\n(Splunk · ELK · Grafana)"/]
+
+    App -->|"INSERT / UPDATE / DELETE"| BT
+    BT -->|"AFTER ROW trigger"| AT
+    AT -->|"INSERT log (same transaction)"| HC
+    HC --> AL
+    AL -.->|"BEFORE UPDATE/DELETE — BỊ CHẶN"| WT
+    WT -->|"dblink autonomous INSERT"| SA
+    WT -.->|"RAISE EXCEPTION → Rollback"| App
+    BT -->|"DDL: CREATE/ALTER"| DDL_LOG
+    AL -->|"log shipper"| SIEM
+
+    style App fill:#fff3cd,stroke:#f0ad4e,color:#000
+    style BT fill:#e8f0fe,stroke:#4a6fa5
+    style AT fill:#e8f0fe,stroke:#4a6fa5
+    style HC fill:#e8f0fe,stroke:#4a6fa5
+    style AL fill:#e6f4ea,stroke:#34a853
+    style WT fill:#fce8e6,stroke:#ea4335
+    style SA fill:#fce8e6,stroke:#ea4335
+    style DDL_LOG fill:#e6f4ea,stroke:#34a853
+    style SIEM fill:#f8f9fa,stroke:#aaa,stroke-dasharray:5 5

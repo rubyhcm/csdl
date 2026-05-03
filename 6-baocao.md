@@ -1,6 +1,6 @@
 # Nghiên cứu và xây dựng hệ thống Audit Log hiệu năng cao trên PostgreSQL sử dụng Partitioning và JSONB
 
-**Sinh viên thực hiện:** Nguyễn Đình Lợi — loindp@ttcagris.com.vn  
+**Sinh viên thực hiện:** Nguyễn Đăng Phúc Lợi — phucloi.dev@gmail.com 
 **Ngày thực hiện:** 29/04/2026
 
 ---

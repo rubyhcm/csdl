@@ -1,16 +1,60 @@
 % Define metadata
 \documentclass{template/thesis}
+% Font: Arial (Helvetica) 11pt
+\usepackage[scaled=1.0]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
 \usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage{float}
+% Define listing float for code
+\newfloat{listing}{tbp}{lop}
+\floatname{listing}{Listing}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz}
+% --- Listings package (deprecated) ---
+\usepackage{listings}
+\usepackage{listingsutf8}
+\usepackage{xcolor}
+\usepackage[utf8]{inputenc}
+% --- Verbatim for code ---
+\usepackage{fancyvrb}
+\usepackage{fvextra}
+\definecolor{kw}{RGB}{0,90,156}
+\definecolor{cmt}{RGB}{0,128,0}
+\definecolor{str}{RGB}{180,40,40}
+\lstdefinelanguage{plpgsql}{
+  morekeywords={CREATE,FUNCTION,TRIGGER,RETURNS,DECLARE,BEGIN,END,IF,THEN,
+    ELSIF,ELSE,RETURN,LANGUAGE,SECURITY,DEFINER,SET,search_path,
+    PARTITION,BY,RANGE,PRIMARY,KEY,SELECT,FROM,WHERE,INSERT,INTO,
+    VALUES,UPDATE,DELETE,EVENT,FOR,EACH,ROW,BEFORE,AFTER,ON,EXECUTE,
+    OR,REPLACE,JSONB,BIGSERIAL,TEXT,TIMESTAMP,BYTEA,DEFAULT,RAISE,EXCEPTION,
+    PERFORM,LOOP,FOR,IN,WHILE,RECORD,ALWAYS,ROW,STATEMENT,NOT,NULLIF},
+  morecomment=[l]{--},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  sensitive=false
+}
+\lstset{
+  language=plpgsql,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{kw}\bfseries,
+  commentstyle=\color{cmt}\itshape,
+  stringstyle=\color{str},
+  frame=single, tabsize=2, breaklines=true,
+  numbers=left, numberstyle=\tiny\color{gray},
+  showstringspaces=false,
+  extendedchars=true,
+  inputencoding=utf8
+}
 % --- Tinh chỉnh khoảng cách ---
 % Khoảng cách giữa hình và văn bản
 \setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
 \setlength{\intextsep}{10pt plus 2pt minus 2pt}
 % Khoảng cách giữa 2 hình liên tiếp
 \setlength{\floatsep}{10pt plus 2pt minus 2pt}
-\Title{Tìm hiểu các thuật toán tổng hợp trọng số trong Federated Learning}
-\Title[en]{A Study on Weight Aggregation Algorithms in Federated Learning}
+\Title{Nghiên cứu và xây dựng hệ thống Audit Log hiệu năng cao trên PostgreSQL sử dụng Partitioning và JSONB}
+\Title[en]{Research and Implementation of a High-Performance Audit Log System on PostgreSQL using Partitioning and JSONB}
 
 \ThesisType{BÁO CÁO ĐỒ ÁN}
 
@@ -19,23 +63,20 @@
 \Faculty{KHOA KHOA HỌC VÀ KỸ THUẬT THÔNG TIN}
 
 
-\Author{PHẠM QUỐC CƯỜNG}{250201004}
-\Author{LÊ QUANG MINH}{250201016}
-\Author{NGUYỄN ĐĂNG PHÚC LỢI}{250202012}
+\Author{Nguyễn Đăng Phúc Lợi}{250202012}
 
-\Degree{MÔN: AN TOÀN BẢO MẬT HỆ THỐNG THÔNG TIN}
-% \MajorCode{123}
-\ThesisYear{2025}
+\Degree{MÔN: CƠ SỞ DỮ LIỆU NÂNG CAO}
+\ThesisYear{2026}
 \ThesisLocation{TP. HỒ CHÍ MINH}
 
-\Supervisor{PGS TS. Nguyễn Tấn Cầm}
+\Supervisor{TS. Nguyễn Gia Tuấn Anh}
 
 \hypersetup{
 	pdfencoding=auto,
-	pdfauthor={Tên tác giả},
-	pdfsubject={Chủ đề đề tài},
-	pdftitle={Tên tiêu đề đề tài},
-	pdfkeywords={}
+	pdfauthor={Nguyễn Đăng Phúc Lợi},
+	pdfsubject={Hệ thống Audit Log hiệu năng cao trên PostgreSQL},
+	pdftitle={Nghiên cứu và xây dựng hệ thống Audit Log hiệu năng cao trên PostgreSQL sử dụng Partitioning và JSONB},
+	pdfkeywords={PostgreSQL, Audit Log, JSONB, Partitioning, GIN Index, WORM, SHA-256, PL/pgSQL}
 }
 
 \begin{document}
@@ -53,25 +94,25 @@
 \label{c:intro}
 \input{chapters/1-MoDau}
 
-\chapter{Cơ sở lý thuyết}
+\chapter{Tổng quan và cơ sở lý thuyết}
 \label{c:cosolythuyet}
 \input{chapters/2-CoSoLyThuyet}
 
-\chapter{Phương pháp đề xuất: FedSecL}
-\label{ch:fedcil}
+\chapter{Phương pháp đề xuất và thiết kế hệ thống}
+\label{ch:proposed}
 \input{chapters/PPDeXuat}
 
-\chapter{Phương pháp thực hiện}
-\label{c:phuongphapthuchien}
+\chapter{Triển khai cơ chế ghi log, vòng đời và bảo mật}
+\label{c:implementation}
 \input{chapters/3-PhuongPhapThucHien}
 
-\chapter{Thực nghiệm, đánh giá và thảo luận}
-\label{c:thucnghiemdanhgia}
+\chapter{Thực nghiệm, kiểm thử và đánh giá}
+\label{c:evaluation}
 \input{chapters/4-ThucNghiemDanhGia}
 
 
 \chapter{Kết luận và hướng phát triển}
-\label{c:ketluanvaphattrien}
+\label{c:conclusion}
 \input{chapters/5-KetLuanPhatTrien}
 
 
@@ -86,6 +127,10 @@
 \endgroup
 \addcontentsline{toc}{chapter}{Tài liệu tham khảo}
 
-
+% --- PHỤ LỤC ---
+\appendix
+\renewcommand{\cftchappresnum}{Phụ lục }
+\addtocontents{toc}{\protect\renewcommand{\protect\cftchappresnum}{Phụ lục }}
+\input{chapters/appendix}
 
 \end{document}
